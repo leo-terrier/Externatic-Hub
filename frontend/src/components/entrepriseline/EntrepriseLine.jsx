@@ -1,6 +1,6 @@
 export default function EntrepriseLine({ entreprise }) {
   return (
-    <li>
+    <li key={entreprise.id}>
       <div style={{ border: "1px solid" }}>
         <h3>{entreprise.name}</h3>
         <div style={{ display: "flex", justifyContent: "center", gap: "30px" }}>

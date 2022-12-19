@@ -10,4 +10,9 @@ INSERT INTO offers (consultant_id, entreprise_id, title, city, stack, max_compen
 */
 
 
+INSERT INTO users (firstname, lastname, email, telephone, favcontactmethod, city, is_active, zipcode) VALUES ("Steve", "McQueen", "leoterrier22+x@gmail.com", "0751212693", "email", "Bordeaux", 1, "33000"); 
+INSERT INTO users (firstname, lastname, email, telephone, favcontactmethod, city, is_active, zipcode) VALUES ("Luc", "Henry", "leoterrier22+x1@gmail.com", "0751212693", "email", "Marseilles", 1, "13000"); 
+
+
+
 

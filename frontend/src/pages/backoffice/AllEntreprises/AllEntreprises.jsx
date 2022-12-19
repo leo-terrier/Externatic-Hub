@@ -1,8 +1,8 @@
-import EntrepriseLine from "@components/entrepriseline/EntrepriseLine";
+import EntrepriseLine from "@components/EntrepriseLine/EntrepriseLine";
 import { getEntreprises } from "@services/utils";
 import { useEffect, useState } from "react";
 
-export default function Entreprises() {
+export default function AllEntreprises() {
   const [entreprises, setEntreprises] = useState([]);
 
   useEffect(() => {
@@ -15,7 +15,9 @@ export default function Entreprises() {
       <ul>
         {entreprises.length > 0 &&
           entreprises.map((entreprise) => {
-            return <EntrepriseLine entreprise={entreprise} />;
+            return (
+              <EntrepriseLine key={entreprise.id} entreprise={entreprise} />
+            );
           })}
       </ul>
     </>

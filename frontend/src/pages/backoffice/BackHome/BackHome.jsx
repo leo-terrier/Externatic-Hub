@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 export default function BackHome() {
   return (
@@ -6,13 +6,13 @@ export default function BackHome() {
       <nav>
         <ul>
           <li>
-            <NavLink to="entreprises">entreprises</NavLink>
+            <NavLink to="entreprise">entreprises</NavLink>
           </li>
           <li>
-            <NavLink to="candidates">candidats</NavLink>
+            <NavLink to="candidat">candidats</NavLink>
           </li>
           <li>
-            <NavLink to="offers">offres</NavLink>
+            <NavLink to="offre">offres</NavLink>
           </li>
         </ul>
       </nav>

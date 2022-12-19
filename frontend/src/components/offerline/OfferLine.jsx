@@ -1,8 +1,12 @@
+import { Link } from "react-router-dom";
+
 export default function OfferLine({ offer }) {
   return (
-    <li>
+    <li key={offer.id}>
       <div style={{ border: "1px solid" }}>
-        <h3>{offer.title}</h3>
+        <h3>
+          <Link to={offer.id.toString()}>{offer.title}</Link>
+        </h3>
         <div style={{ display: "flex", justifyContent: "center", gap: "30px" }}>
           <p>{offer.city}</p>
           <p>{offer.job_field}</p>

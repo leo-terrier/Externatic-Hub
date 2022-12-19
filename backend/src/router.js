@@ -1,17 +1,19 @@
 const express = require("express");
 const {
-  getOffers,
-  getEntreprises,
-  getCandidates,
+  allCandidates,
+  allOffers,
+  allEntreprises,
+  offerById,
 } = require("./controllers/controllers");
 
 const router = express.Router();
 
 /* const itemControllers = require("./controllers/itemControllers");
  */
-router.get("/offers", getOffers);
-router.get("/entreprises", getEntreprises);
-router.get("/candidates", getCandidates);
+router.get("/offers", allOffers);
+router.get("/offers/:id", offerById);
+router.get("/entreprises", allEntreprises);
+router.get("/candidates", allCandidates);
 
 /* router.get("/items", itemControllers.browse);
 router.get("/items/:id", itemControllers.read);
