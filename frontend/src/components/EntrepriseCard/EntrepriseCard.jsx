@@ -1,4 +1,4 @@
-export default function EntrepriseLine({ entreprise }) {
+export default function EntrepriseCard({ entreprise }) {
   return (
     <li key={entreprise.id}>
       <div style={{ border: "1px solid" }}>

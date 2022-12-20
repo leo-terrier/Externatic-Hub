@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-export default function OfferLine({ offer }) {
+export default function OfferCard({ offer }) {
   return (
-    <li key={offer.id}>
+    <li>
       <div style={{ border: "1px solid" }}>
         <h3>
           <Link to={offer.id.toString()}>{offer.title}</Link>

@@ -19,6 +19,8 @@
   "rules": {
     "react/prop-types": 0,
     "no-console": "off",
+    "no-param-reassign": "off",
+    "no-nested-ternary": "off",
     /* "no-restricted-syntax": [
       "error",
       {
