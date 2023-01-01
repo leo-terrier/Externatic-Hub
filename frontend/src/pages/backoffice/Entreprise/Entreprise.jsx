@@ -1,14 +1,16 @@
-import { getEntrepriseById, getEntrepriseOffers } from "@services/utils";
+import CreateOfferForm from "@components/backoffice/CreateOfferForm/CreateOfferForm";
+import { getEntrepriseById, getEntrepriseOffers } from "@services/APIcall";
 import MaterialTable from "material-table";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Entreprise() {
+  // Fetched data
   const [info, setInfo] = useState({});
   const [activeOffers, setActiveOffers] = useState([]);
   const [inactiveOffers, setInactiveOffers] = useState([]);
 
-  const { id } = useParams();
+  const { id: entrepriseId } = useParams();
 
   const navigate = useNavigate();
 
@@ -17,6 +19,14 @@ export default function Entreprise() {
       title: "ID",
       field: "id",
       type: "numeric",
+      cellStyle: { width: "4%" },
+      width: "4%",
+      headerStyle: { width: "4%" },
+    },
+    {
+      title: "Date",
+      field: "date",
+      type: "date",
     },
     {
       title: "Titre",
@@ -31,63 +41,83 @@ export default function Entreprise() {
       field: "job_field",
     },
     {
-      title: "Secteur",
-      field: "industry",
+      title: "Consultant",
+      field: "consultant",
     },
     {
       title: "Statut",
       field: "status",
-    },
-  ];
-
-  const actions = [
-    {
-      icon: "visibility",
-      tooltip: "Accéder",
-      onClick: (_, rowData) => {
-        navigate(`../offre/:${rowData.id.toString()}`);
-      },
+      render: (rowData) => (
+        <p
+          className={`font-bold text-${
+            rowData.status === "Active"
+              ? "green"
+              : rowData.status === "Non-pourvue"
+              ? "red"
+              : "purple"
+          }-500`}
+        >
+          {rowData.status}
+        </p>
+      ),
     },
   ];
 
   const options = {
-    actionsColumnIndex: -1,
+    pageSize: 10,
+    emptyRowsWhenPaging: false,
+    pageSizeOptions: [10, 20, 30],
   };
 
-  useEffect(() => {
-    getEntrepriseById(id).then((res) => {
+  const loadOffers = () => {
+    getEntrepriseById(entrepriseId).then((res) => {
       setInfo(res);
     });
-    getEntrepriseOffers(id).then((res) => {
-      setActiveOffers(res.filter((elt) => elt.status === "active"));
-      setInactiveOffers(res.filter((elt) => elt.is_active === "inactive"));
+    getEntrepriseOffers(entrepriseId).then((res) => {
+      res.forEach((elt) => {
+        elt.status =
+          elt.status === "active"
+            ? "Active"
+            : elt.status === "filled"
+            ? "Pourvue"
+            : "Non-pourvue";
+      });
+      setActiveOffers(res.filter((elt) => elt.status === "Active"));
+      setInactiveOffers(res.filter((elt) => elt.status !== "Active"));
     });
-  }, []);
+  };
+
+  useEffect(loadOffers, []);
 
   if (Object.keys(info).length > 0) {
     return (
-      <>
+      <div className="flex flex-col gap-16 ">
         <div>
-          <h1>{`${info.name} (${info.id})`}</h1>
-          <p>{info.description}</p>
-          <p>Taille : {info.size}</p>
-          <p>Secteur : {info.industry}</p>
+          <h1>{`${info.name} (n° ${info.id})`}</h1>
+          <p className="font-bold">Taille : {info.size}</p>
+          <p className="font-bold">Secteur : {info.industry}</p>
+          <p className="whitespace-pre-line">{info.description}</p>
         </div>
         <MaterialTable
           title="Liste des offres actives"
           columns={tableColumns}
           data={activeOffers}
-          actions={actions}
           options={options}
+          onRowClick={(_, rowData) =>
+            navigate(`../offre/${rowData.id.toString()}`)
+          }
         />
         <MaterialTable
           title="Liste des offres inactives"
           columns={tableColumns}
           data={inactiveOffers}
-          actions={actions}
           options={options}
+          onRowClick={(_, rowData) =>
+            navigate(`../offre/${rowData.id.toString()}`)
+          }
         />
-      </>
+        <CreateOfferForm entrepriseId={entrepriseId} loadOffers={loadOffers} />
+      </div>
     );
   }
 }

@@ -1,5 +1,5 @@
-import UserCard from "@components/UserCard/UserCard";
-import { getUsers } from "@services/utils";
+import UserCard from "@components/backoffice/UserCard/UserCard";
+import { getUsers } from "@services/APIcall";
 import MaterialTable from "material-table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,10 +34,6 @@ export default function AllUsers() {
       field: "city",
     },
     {
-      title: "Statut",
-      field: "status",
-    },
-    {
       title: "Propositions",
       field: "nb_received_propositions",
     },
@@ -49,21 +45,25 @@ export default function AllUsers() {
       title: "Offres pourvues",
       field: "filled_offers",
     },
-  ];
-
-  const actions = [
     {
-      icon: "visibility",
-      tooltip: "Accéder",
-      onClick: (event, rowData) => {
-        console.log(rowData);
-        navigate(rowData.id);
-      },
+      title: "Statut",
+      field: "status",
+      render: (rowData) => (
+        <p
+          className={`font-bold text-${
+            rowData.status === "Actif" ? "green" : "red"
+          }-500`}
+        >
+          {rowData.status}
+        </p>
+      ),
     },
   ];
 
   const options = {
-    actionsColumnIndex: -1,
+    pageSize: 30,
+    emptyRowsWhenPaging: false,
+    pageSizeOptions: [10, 20, 30],
   };
 
   const [users, setUsers] = useState([]);
@@ -74,7 +74,7 @@ export default function AllUsers() {
         res.map((elt) => {
           const obj = {
             ...elt,
-            status: elt.is_active ? "actif" : "inactif",
+            status: elt.is_active ? "Actif" : "Inactif",
           };
           delete obj.is_active;
           return obj;
@@ -84,25 +84,26 @@ export default function AllUsers() {
   }, []);
 
   return (
-    <>
-      <div>Candidats</div>
-      {users.length > 0 &&
-        users.map((user) => {
-          return (
-            <ul>
-              <UserCard key={user.id} user={user} />
-            </ul>
-          );
-        })}
+    <div className="prose max-w-full">
+      <h1>Candidats</h1>
       {users.length > 0 && (
-        <MaterialTable
-          title="Liste des candidats"
-          columns={tableColumns}
-          data={users}
-          actions={actions}
-          options={options}
-        />
+        <ul className="md:hidden">
+          {users.map((user) => (
+            <UserCard key={user.id} user={user} />
+          ))}
+        </ul>
       )}
-    </>
+      {users.length > 0 && (
+        <div className="hidden md:block">
+          <MaterialTable
+            title="Liste des candidats"
+            columns={tableColumns}
+            data={users}
+            options={options}
+            onRowClick={(_, rowData) => navigate(rowData.id.toString())}
+          />
+        </div>
+      )}
+    </div>
   );
 }

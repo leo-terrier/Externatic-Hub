@@ -1,20 +1,22 @@
-import { getOfferById, getOfferPropositions } from "@services/utils";
+import { getOfferById, getOfferPropositions } from "@services/APIcall";
+import { Boldify, Underline } from "@services/utils";
 import MaterialTable from "material-table";
 import { useEffect, useState } from "react";
-import { /* useNavigate , */ useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function Offer() {
   const [info, setInfo] = useState({});
   const [propositionsMade, setPropositionsMade] = useState([]);
   const [propositionsReceived, setPropositionsReceived] = useState([]);
+
   const { id } = useParams();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const tableColumns = [
     {
-      title: "ID",
-      field: "id",
-      type: "numeric",
+      title: "Date",
+      field: "date",
+      type: "date",
     },
     {
       title: "Prénom",
@@ -31,35 +33,57 @@ export default function Offer() {
     {
       title: "Statut",
       field: "status",
-    },
-  ];
-
-  const actions = [
-    {
-      icon: "visibility",
-      tooltip: "Accéder",
-      onClick: (_, rowData) => {
-        console.log(rowData);
-      },
+      render: (rowData) => (
+        <p
+          style={{
+            fontWeight: "bold",
+            color:
+              rowData.status === "Rejetée"
+                ? "red"
+                : rowData.status === "Acceptée"
+                ? "green"
+                : "orange",
+          }}
+        >
+          {rowData.status}
+        </p>
+      ),
     },
   ];
 
   const options = {
-    actionsColumnIndex: -1,
+    pageSize: 10,
+    emptyRowsWhenPaging: false,
+    pageSizeOptions: [10, 20, 30],
   };
 
-  useEffect(() => {
+  const loadingOfferAndPropositions = () => {
     getOfferById(id).then((res) => {
+      // Handling of status translation
+      res.status =
+        res.status === "active"
+          ? "Active"
+          : res.status === "unfilled"
+          ? "Non-pourvue"
+          : "Pourvue";
+      // Handling of null|undefined INT
+      res.max_compensation = res.max_compensation || "N/A";
+      res.min_compensation = res.min_compensation || "N/A";
+      res.remote_days = res.remote_days || "N/A";
+      res.content = res.content || "N/A";
+      res.stack = res.stack || "N/A";
+
       setInfo(res);
     });
     getOfferPropositions(id).then((res) => {
       res.forEach((elt) => {
+        // Handling of status translation
         elt.status =
           elt.status === "pending"
             ? "En attente"
             : elt.status === "accepted"
-            ? "Accepté"
-            : "Rejeté";
+            ? "Acceptée"
+            : "Rejetée";
       });
       setPropositionsMade(
         res.filter((elt) => elt.proposition_initiative === "entreprise")
@@ -68,64 +92,115 @@ export default function Offer() {
         res.filter((elt) => elt.proposition_initiative === "user")
       );
     });
-  }, []);
+  };
+
+  useEffect(loadingOfferAndPropositions, []);
 
   if (Object.keys(info).length > 0) {
     return (
-      <>
-        <div>
-          <h1>
-            {info.title} ({info.status})
+      <div className="flex flex-col gap-12 relative">
+        <section className="italic">
+          <h1 className="mb-2 not-italic">
+            {info.title} (n°{info.id})
           </h1>
-          <p>{info.job_field}</p>
-          <p>{info.entreprise_name}</p>
-          <p>{info.entreprise_industry}</p>
-          <p>{info.entreprise_size}</p>
-          <p>{info.city}</p>
-        </div>
-        <div>
-          <p>{info.content}</p>
-          <p>{info.stack}</p>
-          <p>{info.min_compensation}</p>
-          <p>{info.max_compensation}</p>
-          <p>{info.remote_days}</p>
-        </div>
-        <div>
-          <p>contact : {info.contact_email}</p>
-          <p>
-            <strong>
-              consultant :{" "}
-              {`${info.consultant_firstname} ${info.consultant_lastname}`}
-            </strong>
+          <p className="text-slate-600 underline text-xl">
+            <Link to={`../entreprise/${info.entreprise_id.toString()}`}>
+              {info.entreprise_name}
+            </Link>
           </p>
-          <p>{info.min_compensation}</p>
-          <p>{info.max_compensation}</p>
-          <p>{info.remote_days}</p>
+          <p>{new Date(info.date).toLocaleString().split(" ")[0]}</p>
+        </section>
+        <div className="border-dashed border-black	bg-gray-200 border-2 p-4 absolute right-0 rounded-sm">
+          <p>
+            <Boldify>Consultant : </Boldify>
+            {info.consultant}
+          </p>
+          <p
+            className={`font-bold ${
+              info.status === "Active"
+                ? "text-green-500"
+                : info.status === "Pourvue"
+                ? "text-purple-500"
+                : "text-red-500"
+            }`}
+          >
+            <Boldify>Statut : </Boldify>
+            {info.status}
+          </p>
+          <p>
+            <Underline>Secteur d'activité</Underline> :{" "}
+            {info.entreprise_industry}
+          </p>
+          <p>
+            <Underline>Taille de l'entreprise</Underline> :{" "}
+            {info.entreprise_size}
+          </p>
         </div>
-        <div
-          style={{
-            display: "flex",
-            width: "90%",
-            margin: "0 auto",
-            justifyContent: "space-evenly",
-          }}
-        >
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2>Informations offre</h2>
+            <p>
+              <Boldify>Ville : </Boldify>
+              {info.city}
+            </p>
+            <p>
+              <Boldify>Domaine : </Boldify>
+              {info.job_field}
+            </p>
+            <p>
+              <Boldify>Technos :</Boldify> {info.stack}
+            </p>
+            <p>
+              <Boldify>Salaire min : </Boldify>
+              {info.min_compensation}
+            </p>
+            <p>
+              <Boldify>Salaire max : </Boldify>
+              {info.max_compensation}
+            </p>
+            <p>
+              <Boldify>Jours de télétravail autorisés : </Boldify>
+              {info.remote_days}
+            </p>
+          </div>
+          <div>
+            <h3>Description</h3>
+            <p className="whitespace-pre-line	">{info.content}</p>
+          </div>
+          <div>
+            <h3>Contact de l'entreprise</h3>
+            <p>
+              {info.entreprise_contact} ({info.entreprise_contact_job_title})
+            </p>
+            <p>{info.entreprise_contact_email}</p>
+            <p>{info.entreprise_contact_telephone}</p>
+          </div>
+        </section>
+        <section>
           <MaterialTable
             title="Propositions faite aux candidats"
             columns={tableColumns}
             data={propositionsMade}
-            actions={actions}
             options={options}
+            onRowClick={(_, rowData) =>
+              navigate(`../proposition/${rowData.id.toString()}`)
+            }
+            style={{ width: "100%" }}
           />
+        </section>
+        <section>
           <MaterialTable
             title="Candidatures reçues"
             columns={tableColumns}
             data={propositionsReceived}
-            actions={actions}
             options={options}
+            onRowClick={(_, rowData) =>
+              navigate(`../proposition/${rowData.id.toString()}`)
+            }
+            style={{ width: "100%" }}
           />
-        </div>
-      </>
+        </section>
+      </div>
     );
   }
 }
