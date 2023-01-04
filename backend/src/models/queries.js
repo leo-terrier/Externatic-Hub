@@ -38,7 +38,7 @@ const getOffers = (paramObject) => {
 
   if (obj.queryStr) {
     str.push(
-      `(t1.title like CONCAT('%', ?, '%') OR t1.job_field like CONCAT('%', ?, '%') OR t1.city like CONCAT('%', ?, '%') OR t1.content like CONCAT('%', ?, '%') OR t1.stack like CONCAT('%', ?, '%') OR t4.name like CONCAT('%', ?, '%') OR t4.industry like CONCAT('%', ?, '%'))`
+      `( t1.id like CONCAT('%', ?, '%') OR t1.date like CONCAT('%', ?, '%') OR t1.city like CONCAT('%', ?, '%') OR t1.title like CONCAT('%', ?, '%') OR t1.content like CONCAT('%', ?, '%') OR t1.stack like CONCAT('%', ?, '%') OR t4.name like CONCAT('%', ?, '%') OR t3.lastname like CONCAT('%', ?, '%') OR t3.firstname like CONCAT('%', ?, '%') OR t4.industry like CONCAT('%', ?, '%'))`
     );
   }
   if (obj.entrepriseSizes) {
@@ -70,11 +70,18 @@ const getOffers = (paramObject) => {
     query = query.concat((i === 0 ? " WHERE " : " AND ") + elt);
   });
 
+  if (obj.orderBy) {
+    query = query.concat(
+      ` ORDER BY ?? ${obj.orderDirection === "asc" ? "ASC" : "DESC"}`
+    );
+    delete obj.orderDirection;
+  }
+
   query = query.concat(" LIMIT ? OFFSET ? ");
 
   Object.keys(obj).forEach((elt) => {
     if (elt === "queryStr") {
-      for (let i = 0; i < 7; i += 1) parameters.push(obj.queryStr);
+      for (let i = 0; i < 10; i += 1) parameters.push(obj.queryStr);
     } else if (elt === "minMaxRemoteDays") {
       parameters.push(obj[elt][0], obj[elt][1]);
     } else parameters.push(obj[elt]);
@@ -83,7 +90,8 @@ const getOffers = (paramObject) => {
   return [query, parameters];
 };
 
-const getNumberOfOffers = "SELECT COUNT(*) offercount FROM offers";
+const getNumberOfOffers = (str) =>
+  `SELECT COUNT(*) offercount FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id ${str}`;
 
 // ATT : include table entreprises
 

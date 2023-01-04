@@ -1,6 +1,6 @@
 import { serializeStrAndArr } from "./utils";
 
-const backendUrl = "http://localhost:5001";
+export const backendUrl = "http://localhost:5001";
 
 // OFFERS
 

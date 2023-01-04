@@ -1,3 +1,4 @@
+const { whereClause } = require("../utils");
 const { database } = require("./index");
 const { queries } = require("./queries");
 
@@ -37,7 +38,11 @@ const getOffers = async (obj) => {
   const [query, parameters] = queries.getOffers(obj);
   console.log(database.format(query, parameters));
   const [offers] = await database.query(query, parameters);
-  const [offerCount] = await database.query(queries.getNumberOfOffers);
+  // const isFilters = Object.keys(obj).filter(elt => elt !== "orderBy" && elt !== "limit").length > 2;
+  const [offerCount] = await database.query(
+    queries.getNumberOfOffers(whereClause(query)),
+    parameters
+  );
   return [offers, offerCount];
 };
 

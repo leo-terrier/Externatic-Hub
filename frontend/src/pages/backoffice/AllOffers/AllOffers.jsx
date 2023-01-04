@@ -1,12 +1,12 @@
-import OfferCard from "@components/backoffice/OfferCard/OfferCard";
-import { getOffers } from "@services/APIcall";
+/* import OfferCard from "@components/backoffice/OfferCard/OfferCard";
+ */ import { getOffers } from "@services/APIcall";
+import { renameFieldToSqlCol } from "@services/utils";
 import MaterialTable from "material-table";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AllOffers() {
-  const [offers, setOffers] = useState([]);
-  const [queryStr, setQueryStr] = useState("");
+  // const [offers, setOffers] = useState([]);
+  // const [queryStr, setQueryStr] = useState("");
   const navigate = useNavigate();
 
   const tableColumns = [
@@ -68,51 +68,49 @@ export default function AllOffers() {
     pageSizeOptions: [10, 20, 30],
   };
 
-  const limit = 30;
-  const offset = 0;
-
-  const fetchData = (abortController) => {
-    const queryObj = queryStr ? { queryStr } : {};
-    const signal = { signal: abortController.signal };
-    setTimeout(() => {
-      getOffers(queryObj, limit, offset, signal)
-        .then(([res]) => setOffers(res))
-        .catch((e) => {
-          if (e.message.includes("abort")) {
-            console.log(e.message);
-          } else {
-            throw new Error(e);
-          }
-        });
-    }, 600);
+  const fetchData = (tableState) => {
+    return new Promise((resolve) => {
+      const { search, pageSize, page, orderBy, orderDirection } = tableState;
+      const queryObj = {};
+      console.log(tableState);
+      if (tableState.search) queryObj.queryStr = search;
+      if (tableState.orderBy) {
+        queryObj.orderBy = renameFieldToSqlCol(orderBy.field);
+        queryObj.orderDirection = orderDirection;
+      }
+      const offset = pageSize * page;
+      getOffers(queryObj, pageSize, offset).then(
+        ([offers, [{ offercount }]]) => {
+          resolve({
+            data: offers,
+            page,
+            totalCount: offercount,
+          });
+        }
+      );
+    });
   };
-
-  useEffect(() => {
-    const abortController = new AbortController();
-    fetchData(abortController);
-    return () => abortController.abort();
-  }, [queryStr]);
 
   return (
     <div className="prose max-w-full">
       <h1>Offres</h1>
-      {offers.length > 0 && (
+      {/*  {offers.length > 0 && (
         <ul className="md:hidden">
           {offers.map((offer) => (
             <OfferCard offer={offer} key={offer.id} />
           ))}
         </ul>
-      )}
+      )} */}
       <div className="hidden md:block">
         <MaterialTable
           title="Liste des offres"
           columns={tableColumns}
-          data={offers.length > 0 ? offers : []}
+          data={fetchData}
           options={options}
           onRowClick={(_, rowData) => navigate(rowData.id.toString())}
-          onSearchChange={(data) => {
+          /* onSearchChange={(data) => {
             setQueryStr(data);
-          }}
+          }} */
         />
       </div>
     </div>
