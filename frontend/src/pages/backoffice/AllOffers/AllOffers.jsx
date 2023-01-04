@@ -66,6 +66,7 @@ export default function AllOffers() {
     pageSize: 30,
     emptyRowsWhenPaging: false,
     pageSizeOptions: [10, 20, 30],
+    debounceInterval: 1000,
   };
 
   // const controller = new AbortController();
@@ -109,9 +110,6 @@ export default function AllOffers() {
           data={fetchData}
           options={options}
           onRowClick={(_, rowData) => navigate(rowData.id.toString())}
-          /* onSearchChange={(data) => {
-            setQueryStr(data);
-          }} */
         />
       </div>
     </div>
