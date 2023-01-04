@@ -68,27 +68,28 @@ export default function AllOffers() {
     pageSizeOptions: [10, 20, 30],
   };
 
-  const fetchData = (tableState) => {
-    return new Promise((resolve) => {
-      const { search, pageSize, page, orderBy, orderDirection } = tableState;
-      const queryObj = {};
-      console.log(tableState);
-      if (tableState.search) queryObj.queryStr = search;
-      if (tableState.orderBy) {
-        queryObj.orderBy = renameFieldToSqlCol(orderBy.field);
-        queryObj.orderDirection = orderDirection;
-      }
-      const offset = pageSize * page;
-      getOffers(queryObj, pageSize, offset).then(
-        ([offers, [{ offercount }]]) => {
-          resolve({
-            data: offers,
-            page,
-            totalCount: offercount,
-          });
-        }
-      );
-    });
+  // const controller = new AbortController();
+
+  const fetchData = async (tableState) => {
+    const { search, pageSize, page, orderBy, orderDirection } = tableState;
+    const queryObj = {};
+    console.log(tableState);
+    if (tableState.search) queryObj.queryStr = search;
+    if (tableState.orderBy) {
+      queryObj.orderBy = renameFieldToSqlCol(orderBy.field);
+      queryObj.orderDirection = orderDirection;
+    }
+    const offset = pageSize * page;
+    const [offers, [{ offercount }]] = await getOffers(
+      queryObj,
+      pageSize,
+      offset
+    );
+    return {
+      data: offers,
+      page,
+      totalCount: offercount,
+    };
   };
 
   return (
