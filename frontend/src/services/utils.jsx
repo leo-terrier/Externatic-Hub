@@ -29,20 +29,18 @@ export const addThousandSeparator = (str) => {
   return str && str !== 0 ? str.replace(/\B(?=(\d{3})+(?!\d))/g, " ") : "";
 };
 
-export const renameFieldToSqlCol = (str) => {
+/* export const renameFieldToSqlCol = (str) => {
   const obj = {
-    id: "t1.id",
-    date: "t1.date",
-    city: "t1.city",
-    title: "t1.title",
-    job_field: "t1.job_field",
-    min_compensation: "t1.min_compensation",
-    max_compensation: "t1.max_compensation",
-    content: "t1.content",
-    stack: "t1.stack",
-    entreprise_name: "t4.name",
-    consultant: "t3.lastname",
-    status: "t1.status",
+    mySqlCol: "t1.id",
+    mySqlCol: "t1.date",
+    mySqlCol: "t1.city",
+    mySqlCol: "t1.title",
+    mySqlCol: "t1.job_field",
+    mySqlCol: "t1.min_compensation",
+    mySqlCol: "t1.max_compensation",
+    mySqlCol: "t1.content",
+    mySqlCol: "t1.stack",
+    mySqlCol: "t4.name",
   };
   return obj[str];
-};
+}; */

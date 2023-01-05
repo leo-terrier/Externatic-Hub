@@ -1,6 +1,6 @@
 /* import OfferCard from "@components/backoffice/OfferCard/OfferCard";
- */ import { getOffers } from "@services/APIcall";
-import { renameFieldToSqlCol } from "@services/utils";
+ */ import { fetchDataFromTable } from "@services/APIcall";
+
 import MaterialTable from "material-table";
 import { useNavigate } from "react-router-dom";
 
@@ -17,35 +17,43 @@ export default function AllOffers() {
       cellStyle: { width: "4%" },
       width: "4%",
       headerStyle: { width: "4%" },
+      mySqlCol: "t1.id",
     },
     {
       title: "Date",
       field: "date",
       type: "date",
+      mySqlCol: "t1.date",
     },
     {
       title: "Titre",
       field: "title",
+      mySqlCol: "t1.title",
     },
     {
       title: "Ville",
       field: "city",
+      mySqlCol: "t1.city",
     },
     {
       title: "Domaine",
       field: "job_field",
+      mySqlCol: "t1.job_field",
     },
     {
       title: "Entreprise",
       field: "entreprise_name",
+      mySqlCol: "t4.name",
     },
     {
       title: "Consultant",
       field: "consultant",
+      mySqlCol: "CONCAT(t3.firstname, ' ', UPPER(t3.lastname))",
     },
     {
       title: "Statut",
       field: "status",
+      mySqlCol: "status",
       render: (rowData) => (
         <p
           className={`font-bold text-${
@@ -69,15 +77,12 @@ export default function AllOffers() {
     debounceInterval: 1000,
   };
 
-  // const controller = new AbortController();
-
-  const fetchData = async (tableState) => {
+  /* const fetchData = async (tableState, brigite) => {
     const { search, pageSize, page, orderBy, orderDirection } = tableState;
     const queryObj = {};
     console.log(tableState);
     if (tableState.search) queryObj.queryStr = search;
     if (tableState.orderBy) {
-      queryObj.orderBy = renameFieldToSqlCol(orderBy.field);
       queryObj.orderDirection = orderDirection;
     }
     const offset = pageSize * page;
@@ -86,13 +91,15 @@ export default function AllOffers() {
       pageSize,
       offset
     );
+
     return {
       data: offers,
       page,
       totalCount: offercount,
     };
-  };
+  }; */
 
+  const dataPath = "offers";
   return (
     <div className="prose max-w-full">
       <h1>Offres</h1>
@@ -107,7 +114,7 @@ export default function AllOffers() {
         <MaterialTable
           title="Liste des offres"
           columns={tableColumns}
-          data={fetchData}
+          data={(tableState) => fetchDataFromTable(tableState, dataPath)}
           options={options}
           onRowClick={(_, rowData) => navigate(rowData.id.toString())}
         />

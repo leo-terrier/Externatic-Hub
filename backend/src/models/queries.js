@@ -1,4 +1,4 @@
-const { camelToSnakeCase } = require("../utils");
+const { camelToSnakeCase, whereClause } = require("../utils");
 
 // Users
 const getUsers =
@@ -33,12 +33,13 @@ const getOffers = (paramObject) => {
   obj.limit = parseInt(obj.limit, 10);
   obj.offset = parseInt(obj.offset, 10);
 
-  console.log(obj);
-  let query = `SELECT t1.id, t1.date, t1.city, t1.title, t1.job_field, t1.min_compensation, t1.max_compensation, t1.content, t1.stack, t4.name entreprise_name, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, (CASE WHEN t1.status = "ative" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id`;
+  let query = `
+  SELECT t1.id, t1.date, t1.title, t1.city, t1.job_field, t1.min_compensation, t1.max_compensation, t1.content, t1.stack, t4.name entreprise_name, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status
+  FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id`;
 
   if (obj.queryStr) {
     str.push(
-      `( t1.id like CONCAT('%', ?, '%') OR t1.date like CONCAT('%', ?, '%') OR t1.city like CONCAT('%', ?, '%') OR t1.title like CONCAT('%', ?, '%') OR t1.content like CONCAT('%', ?, '%') OR t1.stack like CONCAT('%', ?, '%') OR t4.name like CONCAT('%', ?, '%') OR t3.lastname like CONCAT('%', ?, '%') OR t3.firstname like CONCAT('%', ?, '%') OR t4.industry like CONCAT('%', ?, '%'))`
+      `(t1.id like CONCAT('%', ?, '%') OR date_format(t1.date,'%d/%m/%Y') like CONCAT('%', ?, '%') OR t1.city like CONCAT('%', ?, '%') OR t1.title like CONCAT('%', ?, '%') OR t1.job_field like CONCAT('%', ?, '%') OR t1.content like CONCAT('%', ?, '%') OR t1.stack like CONCAT('%', ?, '%') OR t4.name like CONCAT('%', ?, '%') OR CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) like CONCAT('%', ?, '%') OR (CASE WHEN t1.status = "ative" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) like CONCAT('%', ?, '%') OR t4.industry like CONCAT('%', ?, '%') )`
     );
   }
   if (obj.entrepriseSizes) {
@@ -72,7 +73,7 @@ const getOffers = (paramObject) => {
 
   if (obj.orderBy) {
     query = query.concat(
-      ` ORDER BY ?? ${obj.orderDirection === "asc" ? "ASC" : "DESC"}`
+      ` ORDER BY ?? ${obj.orderDirection === "asc" ? "ASC" : "DESC"} `
     );
     delete obj.orderDirection;
   }
@@ -81,7 +82,7 @@ const getOffers = (paramObject) => {
 
   Object.keys(obj).forEach((elt) => {
     if (elt === "queryStr") {
-      for (let i = 0; i < 10; i += 1) parameters.push(obj.queryStr);
+      for (let i = 0; i < 11; i += 1) parameters.push(obj.queryStr);
     } else if (elt === "minMaxRemoteDays") {
       parameters.push(obj[elt][0], obj[elt][1]);
     } else parameters.push(obj[elt]);
@@ -90,8 +91,11 @@ const getOffers = (paramObject) => {
   return [query, parameters];
 };
 
-const getNumberOfOffers = (str) =>
-  `SELECT COUNT(*) offercount FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id ${str}`;
+const getNumberOfOffers = (query) => {
+  return `SELECT COUNT(*) totalCount FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id ${whereClause(
+    query
+  )}`;
+};
 
 // ATT : include table entreprises
 
@@ -119,8 +123,61 @@ Object.keys(obj.map(property => camelToSnakeCase(property))) */
 // // ENTREPRISES
 
 // GET
-const getEntreprises = `SELECT t1.id, t1.name, t1.size, t1.industry, sum(case when t2.status =
-    'active' then 1 else 0 end) nb_active_offers, sum(case when t2.status = 'unfilled' then 1 else 0 end) nb_unfilled_offers, sum(case when t2.status = 'filled' then 1 else 0 end) nb_filled_offers FROM entreprises t1 LEFT JOIN offers t2 ON t1.id = t2.entreprise_id GROUP BY t1.id`;
+/* const getEntreprisesBis = `SELECT t1.id, t1.name, t1.size, t1.industry, sum(case when t2.status =
+    'active' then 1 else 0 end) nb_active_offers, sum(case when t2.status = 'unfilled' then 1 else 0 end) nb_unfilled_offers, sum(case when t2.status = 'filled' then 1 else 0 end) nb_filled_offers FROM entreprises t1 LEFT JOIN offers t2 ON t1.id = t2.entreprise_id GROUP BY t1.id`; */
+
+const getEntreprises = (paramObject) => {
+  console.log(paramObject);
+  const str = [];
+  const parameters = [];
+  const obj = { ...paramObject };
+  obj.limit = parseInt(obj.limit, 10);
+  obj.offset = parseInt(obj.offset, 10);
+
+  let query = `
+  SELECT t1.id, t1.name, t1.size, t1.industry, sum(case when t2.status = 'active' then 1 else 0 end) nb_active_offers, sum(case when t2.status = 'unfilled' then 1 else 0 end) nb_unfilled_offers, sum(case when t2.status = 'filled' then 1 else 0 end) nb_filled_offers FROM entreprises t1 LEFT JOIN offers t2 ON t1.id = t2.entreprise_id `;
+
+  if (obj.queryStr) {
+    str.push(
+      `( t1.name like CONCAT('%', ?, '%') OR t1.size like CONCAT('%', ?, '%') OR t1.industry like CONCAT('%', ?, '%') )`
+    );
+  }
+
+  if (obj.entrepriseSizes) {
+    str.push("(t4.size in (?))");
+  }
+
+  if (obj.industries) {
+    str.push("(t4.industry in (?))");
+  }
+
+  str.forEach((elt, i) => {
+    query = query.concat((i === 0 ? " WHERE " : " AND ") + elt);
+  });
+
+  query += " GROUP BY t1.id ";
+
+  if (obj.orderBy) {
+    query = query.concat(
+      ` ORDER BY ?? ${obj.orderDirection === "asc" ? "ASC" : "DESC"} `
+    );
+    delete obj.orderDirection;
+  }
+
+  query = query.concat(" LIMIT ? OFFSET ? ");
+
+  Object.keys(obj).forEach((elt) => {
+    if (elt === "queryStr") {
+      for (let i = 0; i < 3; i += 1) parameters.push(obj.queryStr);
+    } else parameters.push(obj[elt]);
+  });
+
+  return [query, parameters];
+};
+
+const getNumberOfEntreprises = (query) => {
+  return `SELECT COUNT(*) totalCount FROM entreprises t1 ${whereClause(query)}`;
+};
 
 const getEntrepriseById = "SELECT * FROM entreprises WHERE id = ?";
 
@@ -212,6 +269,7 @@ module.exports = {
     getUserPropositions,
     getUserFavorites,
     getEntreprises,
+    getNumberOfEntreprises,
     getEntrepriseById,
     getEntrepriseOffers,
     getEntrepriseContacts,

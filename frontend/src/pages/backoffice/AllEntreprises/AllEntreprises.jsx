@@ -2,16 +2,12 @@ import {
   entrepriseIndustryOptions,
   entrepriseSizeOptions,
 } from "@assets/form-options/form-options";
-import EntrepriseCard from "@components/backoffice/EntrepriseCard/EntrepriseCard";
-import { createEntreprise, getEntreprises } from "@services/APIcall";
+import { createEntreprise, fetchDataFromTable } from "@services/APIcall";
 import MaterialTable from "material-table";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AllEntreprises() {
-  // Fetched info
-  const [entreprises, setEntreprises] = useState([]);
-
   // Form data
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -19,34 +15,6 @@ export default function AllEntreprises() {
   const [industry, setIndustry] = useState("");
 
   const navigate = useNavigate();
-
-  const loadEntreprises = () => {
-    getEntreprises().then((res) => {
-      setEntreprises(() => {
-        return res.map((elt) => {
-          return {
-            id: elt.id,
-            name: elt.name,
-            size: elt.size,
-            industry: elt.industry,
-            nb_active_offers: elt.nb_active_offers,
-            nb_filled_offers: elt.nb_filled_offers,
-            nb_unfilled_offers: elt.nb_unfilled_offers,
-          };
-        });
-      });
-    });
-  };
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    await createEntreprise({ name, description, size, industry });
-    setName("");
-    setDescription("");
-    setSize("");
-    setIndustry("");
-    loadEntreprises();
-  };
 
   const tableColumns = [
     {
@@ -56,6 +24,7 @@ export default function AllEntreprises() {
       cellStyle: { width: "4%" },
       width: "4%",
       headerStyle: { width: "4%" },
+      mySqlCol: "t1.id",
     },
     {
       title: "Nom",
@@ -63,13 +32,15 @@ export default function AllEntreprises() {
       /* cellStyle: { width: "15%" },
       width: "15%",
       headerStyle: { width: "15%" }, */
+      mySqlCol: "t1.name",
     },
     {
       title: "Taille",
       field: "size",
       /* cellStyle: { width: "8%" },
       width: "8%",
-      headerStyle: { width: "8%" }, */
+      headerStyle: { width: "8%" },  */
+      mySqlCol: "t1.size",
     },
     {
       title: "Secteur",
@@ -77,6 +48,7 @@ export default function AllEntreprises() {
       /* cellStyle: { width: "15%" },
       width: "10%",
       headerStyle: { width: "15%" }, */
+      mySqlCol: "t1.industry",
     },
     {
       title: "Offres actives",
@@ -84,6 +56,7 @@ export default function AllEntreprises() {
       /* cellStyle: { width: "10%" },
       width: "10%",
       headerStyle: { width: "10%" }, */
+      mySqlCol: "nb_active_offers",
     },
     {
       title: "Offres pourvues",
@@ -91,6 +64,7 @@ export default function AllEntreprises() {
       /* cellStyle: { width: "10%" },
       width: "10%",
       headerStyle: { width: "10%" }, */
+      mySqlCol: "nb_filled_offers",
     },
     {
       title: "Offres non-pourvues",
@@ -98,6 +72,7 @@ export default function AllEntreprises() {
       /* cellStyle: { width: "13%" },
       width: "13%",
       headerStyle: { width: "13%" }, */
+      mySqlCol: "nb_unfilled_offers",
     },
   ];
 
@@ -105,33 +80,42 @@ export default function AllEntreprises() {
     pageSize: 30,
     emptyRowsWhenPaging: false,
     pageSizeOptions: [10, 20, 30],
+    debounceInterval: 1000,
   };
 
-  useEffect(loadEntreprises, []);
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    await createEntreprise({ name, description, size, industry });
+    setName("");
+    setDescription("");
+    setSize("");
+    setIndustry("");
+    // loadEntreprises();
+  };
+
+  const dataPath = "entreprises";
 
   return (
     <div className="flex flex-col gap-16">
       <div>
         <h1>Entreprises</h1>
         <ul className="md:hidden">
-          {entreprises.length > 0 &&
+          {/* {entreprises.length > 0 &&
             entreprises.map((entreprise) => {
               return (
                 <EntrepriseCard key={entreprise.id} entreprise={entreprise} />
               );
-            })}
+            })} */}
         </ul>
-        {entreprises.length > 0 && (
-          <div className="hidden md:block">
-            <MaterialTable
-              title="Liste des entreprises"
-              columns={tableColumns}
-              data={entreprises}
-              onRowClick={(_, rowData) => navigate(rowData.id.toString())}
-              options={options}
-            />
-          </div>
-        )}
+        <div className="hidden md:block">
+          <MaterialTable
+            title="Liste des entreprises"
+            columns={tableColumns}
+            data={(tableState) => fetchDataFromTable(tableState, dataPath)}
+            onRowClick={(_, rowData) => navigate(rowData.id.toString())}
+            options={options}
+          />
+        </div>
       </div>
       <form>
         <h2>Nouvelle entreprise</h2>

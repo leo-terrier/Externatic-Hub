@@ -2,17 +2,54 @@ import { serializeStrAndArr } from "./utils";
 
 export const backendUrl = "http://localhost:5001";
 
+// ALL
+export const fetchAPIData = async (queryObj, limit, offset, dataPath) => {
+  let url = `${backendUrl}/${dataPath}?`;
+  const queryObjProperties = Object.keys(queryObj);
+  if (queryObjProperties.length) {
+    url = url.concat(serializeStrAndArr(queryObj), "&");
+  }
+  url += `limit=${limit}&offset=${offset}`;
+  const response = await fetch(url);
+  const responseJson = await response.json();
+  return responseJson;
+};
+
+// BACKOFFICE
+export const fetchDataFromTable = async (tableState, dataPath) => {
+  const { search, pageSize, page, orderBy, orderDirection } = tableState;
+  const queryObj = {};
+  console.log(tableState);
+  if (tableState.search) queryObj.queryStr = search;
+  if (tableState.orderBy) {
+    queryObj.orderBy = orderBy.mySqlCol;
+    queryObj.orderDirection = orderDirection;
+  }
+  const offset = pageSize * page;
+  const [data, [{ totalCount }]] = await fetchAPIData(
+    queryObj,
+    pageSize,
+    offset,
+    dataPath
+  );
+  return {
+    data,
+    page,
+    totalCount,
+  };
+};
+
 // OFFERS
 
 // // GET
-export const getOffers = async (queryObj, limit, offset, signal = {}) => {
+export const getOffers = async (queryObj, limit, offset) => {
   let url = `${backendUrl}/offers?`;
   const queryObjProperties = Object.keys(queryObj);
   if (queryObjProperties.length) {
     url = url.concat(serializeStrAndArr(queryObj), "&");
   }
   url += `limit=${limit}&offset=${offset}`;
-  const response = await fetch(url, signal);
+  const response = await fetch(url);
   const responseJson = await response.json();
   return responseJson;
 };
@@ -83,8 +120,9 @@ export const getUserFavorites = async (id) => {
 // // ENTREPRISES
 
 // GET
-export const getEntreprises = async () => {
-  const response = await fetch(backendUrl + "/entreprises");
+export const getEntreprises = async (queryObj, limit, offset) => {
+  let url = `${backendUrl}/entreprises?`;
+
   const responseJson = await response.json();
   return responseJson;
 };

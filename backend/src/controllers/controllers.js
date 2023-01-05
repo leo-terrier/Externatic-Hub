@@ -87,8 +87,8 @@ const addOffer = async (req, res) => {
 
 // GET
 const allEntreprises = async (req, res) => {
-  const entreprises = await getEntreprises();
-  if (!entreprises.length) return res.sendStatus(404);
+  const entreprises = await getEntreprises(req.query);
+  // if (!entreprises.length) return res.sendStatus(404);
   return res.send(entreprises);
 };
 

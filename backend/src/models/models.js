@@ -36,11 +36,15 @@ const getUserFavorites = async (id) => {
 // // GET
 const getOffers = async (obj) => {
   const [query, parameters] = queries.getOffers(obj);
+  /* console.log('///SELECT///');
   console.log(database.format(query, parameters));
+  console.log('///COUNT///');
+  console.log(database.format(queries.getNumberOfOffers(query), parameters)); */
+  console.log(whereClause(query));
   const [offers] = await database.query(query, parameters);
   // const isFilters = Object.keys(obj).filter(elt => elt !== "orderBy" && elt !== "limit").length > 2;
   const [offerCount] = await database.query(
-    queries.getNumberOfOffers(whereClause(query)),
+    queries.getNumberOfOffers(query),
     parameters
   );
   return [offers, offerCount];
@@ -73,9 +77,21 @@ const createOffer = async (obj) => {
 // // ENTREPRISES
 
 // GET
-const getEntreprises = async () => {
-  const [entreprises] = await database.query(queries.getEntreprises);
-  return entreprises;
+
+const getEntreprises = async (obj) => {
+  const [query, parameters] = queries.getEntreprises(obj);
+  console.log("///SELECT///");
+  console.log(database.format(query, parameters));
+  console.log("///COUNT///");
+  console.log(
+    database.format(queries.getNumberOfEntreprises(query), parameters)
+  );
+  const [entreprises] = await database.query(query, parameters);
+  const [entrepriseCount] = await database.query(
+    queries.getNumberOfEntreprises(query),
+    parameters
+  );
+  return [entreprises, entrepriseCount];
 };
 
 const getEntrepriseById = async (id) => {

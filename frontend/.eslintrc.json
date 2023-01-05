@@ -21,6 +21,7 @@
     "no-console": "off",
     "no-param-reassign": "off",
     "no-nested-ternary": "off",
+    "import/no-cycle": "off",
     /* "no-restricted-syntax": [
       "error",
       {
