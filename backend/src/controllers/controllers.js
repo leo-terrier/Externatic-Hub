@@ -21,8 +21,8 @@ const {
 
 // Users
 const allUsers = async (req, res) => {
-  const users = await getUsers();
-  if (!users.length) return res.sendStatus(404);
+  const users = await getUsers(req.query);
+  // if (!users.length) return res.sendStatus(404);
   return res.send(users);
 };
 

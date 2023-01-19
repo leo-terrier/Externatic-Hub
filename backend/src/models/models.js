@@ -1,11 +1,15 @@
-const { whereClause } = require("../utils");
 const { database } = require("./index");
 const { queries } = require("./queries");
 
 // Users
-const getUsers = async () => {
-  const [users] = await database.query(queries.getUsers);
-  return users;
+const getUsers = async (obj) => {
+  const [query, parameters] = queries.getUsers(obj);
+  const [users] = await database.query(query, parameters);
+  const [userCount] = await database.query(
+    queries.getNumberOfUsers(query),
+    parameters
+  );
+  return [users, userCount];
 };
 
 const getUserById = async (id) => {
@@ -36,11 +40,10 @@ const getUserFavorites = async (id) => {
 // // GET
 const getOffers = async (obj) => {
   const [query, parameters] = queries.getOffers(obj);
-  /* console.log('///SELECT///');
+  console.log("///SELECT///");
   console.log(database.format(query, parameters));
-  console.log('///COUNT///');
+  /* console.log('///COUNT///');
   console.log(database.format(queries.getNumberOfOffers(query), parameters)); */
-  console.log(whereClause(query));
   const [offers] = await database.query(query, parameters);
   // const isFilters = Object.keys(obj).filter(elt => elt !== "orderBy" && elt !== "limit").length > 2;
   const [offerCount] = await database.query(
@@ -69,7 +72,6 @@ const createOffer = async (obj) => {
   const [query, parameters] = queries.createOffer(obj);
   console.log(database.format(query, parameters));
   const response = await database.query(query, parameters);
-
   const id = response[0].insertId;
   return id;
 };
@@ -133,6 +135,7 @@ const createEntrepriseContact = async (obj) => {
 
 const getPropositionById = async (id) => {
   const [proposition] = await database.query(queries.getPropositionById, [id]);
+  console.log(database.format(queries.getPropositionById, [id]));
   return proposition;
 };
 

@@ -1,3 +1,4 @@
+import googleApiKey from "@assets/googleApiKeySecret";
 import { useEffect, useRef } from "react";
 
 let autoComplete;
@@ -21,7 +22,7 @@ const loadScript = (url, callback) => {
   document.getElementsByTagName("head")[0].appendChild(script);
 };
 
-async function handlePlaceSelect(setCity, setGeo) {
+async function handlePlaceSelect(setCity, setGeopoints) {
   const addressObject = autoComplete.getPlace();
   const selectedCity = addressObject.formatted_address
     .split(",")[0]
@@ -32,13 +33,13 @@ async function handlePlaceSelect(setCity, setGeo) {
     addressObject.geometry.location.lng(),
     addressObject.geometry.location.lat(),
   ]);
-  setGeo([
+  setGeopoints([
     addressObject.geometry.location.lng(),
     addressObject.geometry.location.lat(),
   ]);
 }
 
-function handleScriptLoad(setCity, setGeo, autoCompleteRef) {
+function handleScriptLoad(setCity, setGeopoints, autoCompleteRef) {
   autoComplete = new window.google.maps.places.Autocomplete(
     autoCompleteRef.current,
     {
@@ -58,17 +59,17 @@ function handleScriptLoad(setCity, setGeo, autoCompleteRef) {
   ]);
 
   autoComplete.addListener("place_changed", () =>
-    handlePlaceSelect(setCity, setGeo)
+    handlePlaceSelect(setCity, setGeopoints)
   );
 }
 
-function SearchLocationInput({ city, setCity, setGeo, tailwindClasses }) {
+function SearchLocationInput({ city, setCity, setGeopoints, tailwindClasses }) {
   const autoCompleteRef = useRef(null);
 
   useEffect(() => {
     loadScript(
-      `https://maps.googleapis.com/maps/api/js?key=AIzaSyAyIRxk0Dyk7dSUsBh2IJZw28rT7AWBxjg&libraries=places`,
-      () => handleScriptLoad(setCity, setGeo, autoCompleteRef)
+      `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&libraries=places`,
+      () => handleScriptLoad(setCity, setGeopoints, autoCompleteRef)
     );
   }, []);
 
@@ -79,7 +80,7 @@ function SearchLocationInput({ city, setCity, setGeo, tailwindClasses }) {
       ref={autoCompleteRef}
       onChange={(event) => {
         setCity(event.target.value);
-        setGeo([]);
+        setGeopoints([]);
       }}
       placeholder="Ville"
       value={city}

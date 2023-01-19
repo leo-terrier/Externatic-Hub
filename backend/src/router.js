@@ -46,12 +46,6 @@ router.get("/propositions/:id", propositionById);
 router.get("/propositions/:id/messages", propositionMessages);
 router.get("/propositions/:id/interviews", propositionInterviews);
 
-/* router.get("/candidates/:id/preferences",)
-
-router.get("/propositions",)
-router.get("/favorites", )
- */
-
 /* router.get("/items", itemControllers.browse);
 router.get("/items/:id", itemControllers.read);
 router.put("/items/:id", itemControllers.edit);

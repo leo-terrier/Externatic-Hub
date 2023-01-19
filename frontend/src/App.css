@@ -5,6 +5,7 @@
 @layer base {
   * {
     @apply border-slate-800;
+    @apply box-border;
   }
   html,
   body,

@@ -26,12 +26,13 @@ export const fetchDataFromTable = async (tableState, dataPath) => {
     queryObj.orderDirection = orderDirection;
   }
   const offset = pageSize * page;
-  const [data, [{ totalCount }]] = await fetchAPIData(
+  const [data, count] = await fetchAPIData(
     queryObj,
     pageSize,
     offset,
     dataPath
   );
+  const totalCount = count.length ? count[0].totalCount : 0;
   return {
     data,
     page,
