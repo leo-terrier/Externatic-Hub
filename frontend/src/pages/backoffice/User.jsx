@@ -135,14 +135,6 @@ export default function User() {
       setPreferences(res);
     });
     getUserPropositions(id).then((res) => {
-      res.forEach((elt) => {
-        elt.status =
-          elt.status === "pending"
-            ? "En attente"
-            : elt.status === "accepted"
-            ? "Acceptée"
-            : "Rejetée";
-      });
       setPropositionsMade(
         res.filter((elt) => elt.proposition_initiative === "user")
       );
@@ -150,17 +142,7 @@ export default function User() {
         res.filter((elt) => elt.proposition_initiative === "entreprise")
       );
     });
-    getUserFavorites(id).then((res) => {
-      res.forEach((elt) => {
-        elt.status =
-          elt.status === "active"
-            ? "Active"
-            : elt.status === "filled"
-            ? "Pourvue"
-            : "Non-pourvue";
-      });
-      setFavorites(res);
-    });
+    getUserFavorites(id).then((res) => setFavorites(res));
   }, []);
 
   if (Object.keys(info).length) {

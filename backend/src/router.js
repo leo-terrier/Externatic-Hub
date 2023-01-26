@@ -8,6 +8,7 @@ const {
   userSearchPreferences,
   userPropositions,
   userFavorites,
+  userResume,
   allEntreprises,
   entrepriseById,
   entrepriseOffers,
@@ -18,6 +19,10 @@ const {
   addEntrepriseContact,
   addOffer,
   entrepriseContacts,
+  retreiveUserSession,
+  userModifyInfo,
+  userModifySearchPreferences,
+  userModifyResume,
 } = require("./controllers/controllers");
 
 const router = express.Router();
@@ -34,6 +39,10 @@ router.get("/users/:id", userById);
 router.get("/users/:id/preferences", userSearchPreferences);
 router.get("/users/:id/propositions", userPropositions);
 router.get("/users/:id/favorites", userFavorites);
+router.get("/users/:id/resumes", userResume);
+router.put("/users/:id", userModifyInfo);
+router.put("/users/:id/preferences", userModifySearchPreferences);
+router.put("/users/:id/resumes", userModifyResume);
 
 router.get("/entreprises", allEntreprises);
 router.get("/entreprises/:id", entrepriseById);
@@ -45,6 +54,8 @@ router.post("/entreprises/:id/contacts", addEntrepriseContact);
 router.get("/propositions/:id", propositionById);
 router.get("/propositions/:id/messages", propositionMessages);
 router.get("/propositions/:id/interviews", propositionInterviews);
+
+router.get("/user-session", retreiveUserSession);
 
 /* router.get("/items", itemControllers.browse);
 router.get("/items/:id", itemControllers.read);

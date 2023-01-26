@@ -4,7 +4,7 @@
 
 @layer base {
   * {
-    @apply border-slate-800;
+    @apply border-zinc-800;
     @apply box-border;
   }
   html,
@@ -16,29 +16,24 @@
   h1 {
     @apply text-3xl;
     @apply mb-10;
-    @apply text-zinc-900;
     @apply font-extrabold;
   }
   h2 {
     @apply text-2xl;
     @apply mb-4;
-    @apply text-zinc-900;
     @apply font-extrabold;
   }
   h3 {
     @apply text-xl;
     @apply mb-4;
-    @apply text-zinc-900;
     @apply font-bold;
   }
   h4 {
     @apply text-lg;
     @apply mb-2;
-    @apply text-zinc-900;
     @apply font-bold;
   }
   p {
-    @apply text-zinc-900;
     @apply mb-2;
     @apply leading-5;
   }
@@ -54,6 +49,7 @@
     @apply border-[1px];
     @apply border-slate-700;
     @apply rounded-sm;
+    @apply p-2;
   }
   .pac-item {
     @apply hidden;
@@ -64,6 +60,9 @@
   div.pac-container.pac-logo {
     @apply shadow-none;
   }
+}
+.pac-container {
+  z-index: 10000 !important;
 }
 
 .pac-item :nth-child(3) {

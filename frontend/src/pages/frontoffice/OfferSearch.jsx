@@ -1,13 +1,13 @@
-import { Pagination } from "@mui/material";
-import { fetchAPIData } from "@services/APIcall";
-import { useState } from "react";
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
 import OfferCard from "@components/frontoffice/OfferCard";
 import OfferSearchForm from "@components/frontoffice/OfferSearchForm";
+import { Pagination } from "@mui/material";
+import { fetchAPIData } from "@services/APIcall";
+import { useState } from "react";
 
 export default function OfferSearch() {
-  const [jobListings, setJobListings] = useState([]);
+  const [offerListings, setOfferListings] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalOfferCount, setTotalOfferCount] = useState(null);
 
@@ -16,24 +16,27 @@ export default function OfferSearch() {
   const handleSearch = async (queryObj) => {
     const limit = 10;
     const dataPath = "offers";
-    const [jobs, offerCount] = await fetchAPIData(
+    const [offers, offerCount] = await fetchAPIData(
       queryObj,
       limit,
       offset,
       dataPath
     );
-    setJobListings(jobs);
+    setOfferListings(offers);
     setTotalOfferCount(offerCount[0].totalCount);
   };
 
   return (
     <div className="jobSearchDiv flex flex-col gap-12 w-full">
+      <h1 className="text-3xl sm:text-4xl mb-2 sm:mb-4 text-center">
+        Quel emploi recherchez-vous ?
+      </h1>
       <OfferSearchForm offset={offset} handleSearch={handleSearch} />
       <div className="w-full sm:w-10/12 mx-auto">
         <Listings>
-          {jobListings.map((job) => (
-            <Listing key={job.id}>
-              <OfferCard job={job} />
+          {offerListings.map((offer) => (
+            <Listing key={offer.id}>
+              <OfferCard offer={offer} />
             </Listing>
           ))}
         </Listings>

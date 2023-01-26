@@ -1,7 +1,10 @@
+const { comparePasswords } = require("../bcrypt");
 const { database } = require("./index");
 const { queries } = require("./queries");
 
 // Users
+
+// // GET
 const getUsers = async (obj) => {
   const [query, parameters] = queries.getUsers(obj);
   const [users] = await database.query(query, parameters);
@@ -15,6 +18,19 @@ const getUsers = async (obj) => {
 const getUserById = async (id) => {
   const [user] = await database.query(queries.getUserById, [id]);
   return user;
+};
+
+const getUserByEmail = async (email, password, done) => {
+  console.log(email);
+  const [[user]] = await database.query(queries.getUserByEmail, [email]);
+  console.log("user");
+  console.log(user);
+  if (!user) return done(null, false);
+  const matchPassword = await comparePasswords(password, user.password);
+  console.log("matchPassword");
+  console.log(matchPassword);
+  if (!matchPassword) return done(null, false);
+  return done(null, user);
 };
 
 const getUserSearchPreferences = async (id) => {
@@ -33,6 +49,42 @@ const getUserPropositions = async (id) => {
 const getUserFavorites = async (id) => {
   const [favorites] = await database.query(queries.getUserFavorites, [id]);
   return favorites;
+};
+
+const getUserResume = async (id) => {
+  const [resume] = await database.query(queries.getUserResume, [id]);
+  return resume;
+};
+
+// // POST
+
+const registerUser = async (email, hash) => {
+  const user = await database.query(queries.registerUser, [email, hash]);
+  console.log(user);
+  return user;
+};
+
+// // PUT
+const modifyUserInfoById = async (obj) => {
+  console.log(obj);
+  const user = await database.query(queries.modifyUserInfo, Object.values(obj));
+  return user;
+};
+
+const modifyUserSearchPreferencesById = async (obj) => {
+  const user = await database.query(
+    queries.modifyUserSearchPreferences,
+    Object.values(obj)
+  );
+  return user;
+};
+
+const modifyUserResume = async (obj) => {
+  const resume = await database.query(
+    queries.modifyUserResume,
+    Object.values(obj)
+  );
+  return resume;
 };
 
 // OFFERS
@@ -160,9 +212,15 @@ module.exports = {
   createOffer,
   getUsers,
   getUserById,
+  getUserByEmail,
   getUserSearchPreferences,
   getUserPropositions,
   getUserFavorites,
+  getUserResume,
+  registerUser,
+  modifyUserInfoById,
+  modifyUserSearchPreferencesById,
+  modifyUserResume,
   getEntreprises,
   getEntrepriseById,
   getEntrepriseOffers,

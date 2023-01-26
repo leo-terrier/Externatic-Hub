@@ -10,6 +10,8 @@ import logoExternatic from "../../assets/LogoExternatic.png";
 export default function Home() {
   const { pathname } = useLocation();
 
+  // Auth
+
   // Buger Menu States
   const [anchorEl, setAnchorEl] = useState(null);
   const handleCloseBurger = () => {
@@ -22,7 +24,7 @@ export default function Home() {
 
   return (
     <>
-      <nav className="flex pt-4 px-4">
+      <nav className="flex h-[80px] px-4 items-center">
         <Link to="/">
           <div className="flex w-[280px] h-[50px] gap-2 lg:w-[380px] lg:gap-4">
             <div className="h-12">
@@ -62,48 +64,44 @@ export default function Home() {
             </MenuItem>
           </Menu>
         </div>
-        <ul className="hidden md:flex w-full items-center justify-end text-xl gap-4 lg:text-2xl lg:gap-8">
-          <li
-            className={`font-bold hover:text-blue-700 ${
-              !["entreprise", "mon-compte", "message"].some((elt) =>
-                pathname.includes(elt)
-              )
-                ? "text-blue-700"
-                : ""
-            }`}
-          >
+        <ul className="ml-4 hidden md:flex w-10/12  justify-start text-lg  lg:text-xl lg:gap-8">
+          <li className={`font-bold hover:text-rose-700 `}>
             <Link to="/">Offres d'emploi</Link>
           </li>
-          <li
-            className={`font-bold hover:text-blue-700 ${
-              pathname.includes("entreprise") ? "text-blue-700" : ""
-            }`}
-          >
-            <Link to="entreprise">Entreprises</Link>
+          <li className={`font-bold hover:text-rose-700 `}>
+            <Link to="entreprise">Entreprises partenaires</Link>
           </li>
-
+          <li className={`font-bold hover:text-rose-700 `}>
+            <Link to="entreprise">Accès backoffice</Link>
+          </li>
+        </ul>
+        <ul className="hidden md:flex w-2/12 items-center justify-end text-xl gap-4 lg:text-2xl lg:gap-8">
           <li>
             <div className="flex justify-between gap-4 lg:gap-8">
-              <Link
-                className={`hover:text-blue-700 ${
-                  pathname.includes("message") ? "text-blue-700" : ""
-                }`}
-              >
+              <Link className="hover:text-rose-700">
                 <MdOutlineEmail size="2em" />
               </Link>
-              <Link
-                className={`hover:text-blue-700 ${
-                  pathname.includes("mon-compte") ? "text-blue-700" : ""
-                }`}
-              >
+              <Link to="account" className={`hover:text-rose-700 `}>
                 <MdAccountCircle size="2em" />
               </Link>
             </div>
           </li>
         </ul>
       </nav>
-      <div className="mt-12 pb-12 w-10/12 max-w-[1200px] mx-auto sm:mt-16 sm:pb-16 md:mt-20 md:pb-20">
-        <Outlet />
+      <div
+        className={`w-full  border-t-2 ${
+          pathname.includes("account") ? "bg-white" : "bg-slate-200"
+        } border-zinc-600`}
+      >
+        <div
+          className={`py-20 w-10/12 max-w-[1200px] px-20 box-content mx-auto  sm:pb-16  md:pb-20 ${
+            !pathname.includes("account")
+              ? "bg-white shadow-xl"
+              : "bg-slate-200 shadow-2xl"
+          }  min-h-screen`}
+        >
+          <Outlet />
+        </div>
       </div>
     </>
   );

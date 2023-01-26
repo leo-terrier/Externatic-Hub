@@ -165,7 +165,7 @@ export default function Entreprise() {
             <Listings>
               {inactiveOffers.length > 0 ? (
                 inactiveOffers
-                  .fitler(
+                  .filter(
                     (_, i) =>
                       i > (inactiveOfferPageNumber - 1) * 5 - 1 &&
                       i < inactiveOfferPageNumber * 5

@@ -1,34 +1,20 @@
-import googleApiKey from "@assets/googleApiKeySecret";
-import { useEffect, useRef } from "react";
+import { dptCode } from "@assets/form-options/dpt";
+import { UserInfoContext } from "@components/frontandback/UserContext";
+import { useContext, useEffect } from "react";
 
 let autoComplete;
 
-const loadScript = (url, callback) => {
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-
-  if (script.readyState) {
-    script.onreadystatechange = function () {
-      if (script.readyState === "loaded" || script.readyState === "complete") {
-        script.onreadystatechange = null;
-        callback();
-      }
-    };
-  } else {
-    script.onload = () => callback();
-  }
-
-  script.src = url;
-  document.getElementsByTagName("head")[0].appendChild(script);
-};
-
 async function handlePlaceSelect(setCity, setGeopoints) {
   const addressObject = autoComplete.getPlace();
+  console.log(addressObject);
   const selectedCity = addressObject.formatted_address
     .split(",")[0]
     .replace(/\d/g, "");
-  console.log(addressObject);
-  setCity(selectedCity);
+  setCity(
+    `${selectedCity} (${
+      dptCode[addressObject.address_components[1].long_name]
+    })`
+  );
   console.log([
     addressObject.geometry.location.lng(),
     addressObject.geometry.location.lat(),
@@ -63,26 +49,38 @@ function handleScriptLoad(setCity, setGeopoints, autoCompleteRef) {
   );
 }
 
-function SearchLocationInput({ city, setCity, setGeopoints, tailwindClasses }) {
-  const autoCompleteRef = useRef(null);
+function SearchLocationInput({
+  city,
+  setCity,
+  setGeopoints,
+  /* tailwindClasses , */
+  autoCompleteRef,
+  placeholder,
+}) {
+  const store = useContext(UserInfoContext);
+  console.log(store);
 
   useEffect(() => {
-    loadScript(
-      `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&libraries=places`,
-      () => handleScriptLoad(setCity, setGeopoints, autoCompleteRef)
-    );
+    if (window.google) {
+      handleScriptLoad(setCity, setGeopoints, autoCompleteRef);
+    } else {
+      const googleScript = document.getElementById("gmap-script");
+      googleScript.addEventListener("load", () => {
+        handleScriptLoad(setCity, setGeopoints, autoCompleteRef);
+      });
+    }
   }, []);
 
   return (
     <input
-      className={`${tailwindClasses}`}
       type="text"
       ref={autoCompleteRef}
       onChange={(event) => {
+        console.log(event.target.value);
         setCity(event.target.value);
         setGeopoints([]);
       }}
-      placeholder="Ville"
+      placeholder={placeholder}
       value={city}
     />
   );

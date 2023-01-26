@@ -1,3 +1,4 @@
+const { passwordHash } = require("../bcrypt");
 const {
   getOffers,
   getOfferPropositions,
@@ -7,6 +8,8 @@ const {
   getUserSearchPreferences,
   getUserPropositions,
   getUserFavorites,
+  registerUser,
+  modifyUserInfoById,
   getEntreprises,
   getEntrepriseById,
   getEntrepriseOffers,
@@ -17,9 +20,25 @@ const {
   getPropositionMessages,
   getPropositionInterviews,
   createOffer,
+  modifyUserSearchPreferencesById,
+  getUserResume,
+  modifyUserResume,
 } = require("../models/models");
 
 // Users
+
+// // GET
+
+const retreiveUserSession = (req, res) => {
+  console.log("req.user retreive");
+  console.log(req.user);
+  if (req.user) {
+    res.send(req.user[0]);
+  } else {
+    res.status(404).send("user not found");
+  }
+};
+
 const allUsers = async (req, res) => {
   const users = await getUsers(req.query);
   // if (!users.length) return res.sendStatus(404);
@@ -49,14 +68,57 @@ const userPropositions = async (req, res) => {
 const userFavorites = async (req, res) => {
   const { id } = req.params;
   const favorites = await getUserFavorites(id);
-  if (!favorites.length) return res.sendStatus(404);
+  if (!favorites.length) return res.send([]);
   return res.send(favorites);
+};
+
+const userResume = async (req, res) => {
+  const { id } = req.params;
+  const resume = await getUserResume(id);
+  return res.send(resume);
+};
+
+// // POST
+const userRegistration = async (req, res) => {
+  const { email, password } = req.body;
+  const hash = await passwordHash(password);
+  const user = await registerUser(email, hash);
+  return res.send(user);
+};
+
+// // PUT
+const userModifyInfo = async (req, res) => {
+  console.log("modifyInfo req.user");
+  console.log(req.user);
+  if (req.user) {
+    const user = await modifyUserInfoById(req.body);
+    return res.send(user);
+  }
+  return res.status("401").send("user not authenticated");
+};
+
+const userModifySearchPreferences = async (req, res) => {
+  if (req.user) {
+    const preferences = await modifyUserSearchPreferencesById(req.body);
+    return res.send(preferences);
+  }
+  return res.status("401").send("user not authenticated");
+};
+
+const userModifyResume = async (req, res) => {
+  if (req.user) {
+    const resume = await modifyUserResume(req.body);
+    return res.send(resume);
+  }
+  return res.status("401").send("user not authenticated");
 };
 
 // Offers
 
 // // GET
 const allOffers = async (req, res) => {
+  console.log("req.user");
+  console.log(req.user);
   const offers = await getOffers(req.query);
   // if (!offers.length) return res.sendStatus(404);
   return res.send(offers);
@@ -154,11 +216,17 @@ module.exports = {
   offerPropositions,
   offerById,
   addOffer,
+  retreiveUserSession,
   allUsers,
   userById,
   userSearchPreferences,
   userPropositions,
   userFavorites,
+  userResume,
+  userRegistration,
+  userModifyInfo,
+  userModifySearchPreferences,
+  userModifyResume,
   allEntreprises,
   entrepriseById,
   entrepriseOffers,

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function Boldify({ children }) {
-  return <span className="font-bold text-black">{children}</span>;
+  return <span className="font-bold">{children}</span>;
 }
+
 export function Underline({ children }) {
   return <span className="underline underline-offset-2">{children}</span>;
 }
@@ -48,6 +49,10 @@ export const addThousandSeparator = (str) => {
 }; */
 
 export const toggleLikeAccordion = (statesArr, stateName) => {
+  console.log("statesArr");
+  console.log("stateName");
+  console.log(statesArr);
+  console.log(stateName);
   statesArr.forEach((arr) => {
     if (arr[0] === stateName) arr[2]((prev) => !prev);
     if (arr[0] !== stateName && arr[1]) arr[2](false);

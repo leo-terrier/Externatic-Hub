@@ -2,6 +2,19 @@ import { serializeStrAndArr } from "./utils";
 
 export const backendUrl = "http://localhost:5001";
 
+const fetchFunction = async (url, method = "GET", body = null) => {
+  const options = {
+    method,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  if (method !== "GET" && body) options.body = JSON.stringify(body);
+  const response = await fetch(url, options);
+  return await response.json();
+};
+
 // ALL
 export const fetchAPIData = async (queryObj, limit, offset, dataPath) => {
   let url = `${backendUrl}/${dataPath}?`;
@@ -10,9 +23,7 @@ export const fetchAPIData = async (queryObj, limit, offset, dataPath) => {
     url = url.concat(serializeStrAndArr(queryObj), "&");
   }
   url += `limit=${limit}&offset=${offset}`;
-  const response = await fetch(url);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(url);
 };
 
 // BACKOFFICE
@@ -50,20 +61,15 @@ export const getOffers = async (queryObj, limit, offset) => {
     url = url.concat(serializeStrAndArr(queryObj), "&");
   }
   url += `limit=${limit}&offset=${offset}`;
-  const response = await fetch(url);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(url);
 };
 
 export const getOfferById = async (id) => {
-  const response = await fetch(backendUrl + "/offers/" + id);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/offers/" + id);
 };
+
 export const getOfferPropositions = async (id) => {
-  const response = await fetch(backendUrl + "/offers/" + id + "/propositions");
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/offers/" + id + "/propositions");
 };
 
 // // POST
@@ -74,48 +80,83 @@ export const createOffer = async (obj) => {
     Object.entries(obj).filter(([_, v]) => v != null && v != "")
   );
 
-  await fetch(backendUrl + "/offers", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(bodyData),
-  });
-  return;
+  fetchFunction(backendUrl + "/offers", "POST", bodyData);
 };
 
-//USERS
+// USERS
+
+// // GET
+
+export const retreiveSessionInfo = async () => {
+  return await fetchFunction(backendUrl + "/user-session");
+};
+
 export const getUsers = async () => {
-  const response = await fetch(backendUrl + "/users");
-  const responseJson = await response.json();
-  return responseJson;
+  return fetchFunction(backendUrl + "/users");
 };
 
 export const getUserById = async (id) => {
-  const response = await fetch(backendUrl + "/users/" + id);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/users/" + id);
 };
+
 export const getUserSearchPreferences = async (id) => {
-  const response = await fetch(backendUrl + "/users/" + id + "/preferences");
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/users/" + id + "/preferences");
 };
 
 export const getUserPropositions = async (id) => {
-  const response = await fetch(backendUrl + "/users/" + id + "/propositions");
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/users/" + id + "/propositions");
 };
 
 export const getUserFavorites = async (id) => {
   try {
-    const response = await fetch(backendUrl + "/users/" + id + "/favorites");
-    const responseJson = await response.json();
-    return responseJson;
+    return await fetchFunction(backendUrl + "/users/" + id + "/favorites");
   } catch (e) {
     console.log("no favorites found");
   }
+};
+
+export const getUserResume = async (id) => {
+  return await fetchFunction(backendUrl + "/users/" + id + "/resumes");
+};
+
+// // POST
+export const logout = async () => {
+  return await fetchFunction(backendUrl + "/logout", "POST");
+};
+
+export const loginUser = async (email, password) => {
+  return await fetchFunction(backendUrl + "/login", "POST", {
+    username: email,
+    password,
+  });
+};
+
+export const registerUser = async (email, password) => {
+  return await fetchFunction(backendUrl + "/register", "POST", {
+    email,
+    password,
+  });
+};
+
+// // PUT
+export const modifyUserInfo = async (obj) => {
+  return await fetchFunction(backendUrl + "/users/" + obj.id, "PUT", obj);
+};
+
+export const modifyUserSearchPreferences = async (obj) => {
+  return await fetchFunction(
+    `${backendUrl}/users/${obj.id}/preferences`,
+    "PUT",
+    obj
+  );
+};
+
+export const modifyUserResume = async (obj) => {
+  return await fetchFunction(
+    `${backendUrl}/users/${obj.id}/resumes`,
+    "PUT",
+    obj
+  );
 };
 
 // // ENTREPRISES
@@ -123,78 +164,50 @@ export const getUserFavorites = async (id) => {
 // GET
 export const getEntreprises = async (queryObj, limit, offset) => {
   let url = `${backendUrl}/entreprises?`;
+  url += `limit=${limit}&offset=${offset}`;
 
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(url);
 };
 
 export const getEntrepriseById = async (id) => {
-  const response = await fetch(backendUrl + "/entreprises/" + id);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/entreprises/" + id);
 };
 
 export const getEntrepriseOffers = async (id) => {
-  const response = await fetch(backendUrl + "/entreprises/" + id + "/offers");
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/entreprises/" + id + "/offers");
 };
 
 export const getEntrepriseContacts = async (id) => {
-  const response = await fetch(backendUrl + "/entreprises/" + id + "/contacts");
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/entreprises/" + id + "/contacts");
 };
 
 // POST
 export const createEntreprise = async (obj) => {
-  await fetch(backendUrl + "/entreprises", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(obj),
-  });
+  await fetchFunction(backendUrl + "/entreprises", "POST", obj);
   return;
 };
 
 export const createEntrepriseContact = async (obj) => {
   const { entrepriseId } = obj;
-  const response = await fetch(
+  return await fetchFunction(
     backendUrl + `/entreprises/${entrepriseId}/contacts`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(obj),
-    }
+    "POST",
+    obj
   );
-  const responseJson = await response.json();
-  const id = responseJson;
-  return id;
 };
 
 //Proposition
 
 export const getPropositionById = async (id) => {
-  const response = await fetch(backendUrl + "/propositions/" + id);
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/propositions/" + id);
 };
 
 export const getPropositionMessages = async (id) => {
-  const response = await fetch(
-    backendUrl + "/propositions/" + id + "/messages"
-  );
-  const responseJson = await response.json();
-  return responseJson;
+  return await fetchFunction(backendUrl + "/propositions/" + id + "/messages");
 };
 
 export const getPropositionInterviews = async (id) => {
-  const response = await fetch(
+  return await fetchFunction(
     backendUrl + "/propositions/" + id + "/interviews"
   );
-  const responseJson = await response.json();
-  return responseJson;
 };

@@ -1,6 +1,8 @@
 const { camelToSnakeCase, whereClause } = require("../utils");
 
 // Users
+
+// // GET
 const getUsers = (paramObject) => {
   const parameters = [];
   const obj = { ...paramObject };
@@ -34,14 +36,34 @@ const getNumberOfUsers = (query) => {
 
 const getUserById = "SELECT * FROM users WHERE id = ?;";
 
+const getUserByEmail = "SELECT * FROM users WHERE email = ?;";
+
 const getUserSearchPreferences =
   "SELECT * FROM search_preferences WHERE user_id = ?;";
 
 const getUserPropositions =
-  "SELECT t1.id, t1.date, t2.title, t2.city, t2.job_field, t3.name entreprise_name, t1.status, t1.proposition_initiative  FROM propositions t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t3.id = t2.entreprise_id WHERE t1.user_id = ?";
+  "SELECT t1.id, t1.offer_id, t1.date, t2.title, t2.city, t2.job_field, t3.name entreprise_name, (CASE WHEN t1.status = 'pending' THEN 'En Attente' WHEN t1.status = 'accepted' THEN 'Acceptée' ELSE 'Rejetée' END) status, t1.proposition_initiative  FROM propositions t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t3.id = t2.entreprise_id WHERE t1.user_id = ?";
 
 const getUserFavorites =
-  "SELECT t1.offer_id id, t2.date, t2.title, t2.job_field, t2.stack, t2.city, t2.status, t3.name entreprise_name, CONCAT(t4.firstname, ' ', UPPER(t4.lastname)) consultant FROM favorite_offers t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t2.entreprise_id = t3.id  INNER JOIN consultants t4 on t2.consultant_id = t4.id WHERE t1.user_id = ?";
+  "SELECT t1.offer_id id, t2.date, t2.title, t2.job_field, t2.stack, t2.city, (CASE WHEN t2.status = 'active' THEN 'Active' WHEN t2.status = 'filled' THEN 'Pourvue' ELSE 'Non-pourvue' END) status, t3.name entreprise_name, CONCAT(t4.firstname, ' ', UPPER(t4.lastname)) consultant FROM favorite_offers t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t2.entreprise_id = t3.id  INNER JOIN consultants t4 on t2.consultant_id = t4.id WHERE t1.user_id = ?";
+
+const getUserResume =
+  "SELECT cv, exp_1_title, exp_1_content, exp_1_entreprise, exp_1_duration, exp_2_title, exp_2_content,  exp_2_entreprise, exp_2_duration FROM resumes WHERE user_id = ?";
+
+// // POST
+
+const registerUser = "INSERT INTO users (email, password) VALUES (?, ?)";
+
+// // PUT
+
+const modifyUserInfo =
+  "UPDATE users set lastname = ?, firstname=?, email = ?, telephone = ?, favcontactmethod = ?, city = ?, is_active = ? WHERE id = ?";
+
+const modifyUserSearchPreferences =
+  "UPDATE search_preferences set query = ?, city = ?, job_fields = ?, entreprise_sizes = ? , industries = ?, compensation = ?, min_remote_days = ?, max_remote_days = ?, geopoints = NULL, distance = NULL WHERE user_id = ?";
+
+const modifyUserResume =
+  "UPDATE resumes set cv = NULL, exp_1_title = ?, exp_1_content = ?, exp_1_entreprise = ?, exp_1_duration = ?,  exp_2_title = ?, exp_2_content = ?, exp_2_entreprise = ?, exp_2_duration = ? WHERE user_id = ? ";
 
 // OFFERS
 
@@ -124,7 +146,7 @@ const getNumberOfOffers = (query) => {
 
 // ATT : include table entreprises
 
-const getOfferById = `SELECT t1.id, t1.date, t1.title, t1.city, t1.stack, t1.max_compensation, t1.min_compensation, (CASE WHEN t1.remote_days = '0' THEN 'Non' WHEN t1.remote_days = '5' THEN 'full-remote' ELSE t1.remote_days END) remote_days, t1.job_field, t1.education, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status, t1.content, t4.id entreprise_id, t4.name entreprise_name, t4.industry entreprise_industry, t4.size entreprise_size, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) entreprise_contact, t2.job_title entreprise_contact_job_title, t2.email as entreprise_contact_email, t2.telephone as entreprise_contact_telephone, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprise_contacts t2 ON t1.entreprise_contact_id = t2.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id WHERE t1.id = ?`;
+const getOfferById = `SELECT t1.id, t1.date, t1.title, t1.city, t1.stack, t1.max_compensation, t1.min_compensation, t1.geopoints, (CASE WHEN t1.remote_days = '0' THEN 'Non' WHEN t1.remote_days = '5' THEN 'full-remote' ELSE t1.remote_days END) remote_days, t1.job_field, t1.education, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status, t1.content, t4.id entreprise_id, t4.name entreprise_name, t4.industry entreprise_industry, t4.size entreprise_size, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) entreprise_contact, t2.job_title entreprise_contact_job_title, t2.email as entreprise_contact_email, t2.telephone as entreprise_contact_telephone, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprise_contacts t2 ON t1.entreprise_contact_id = t2.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id WHERE t1.id = ?`;
 
 const getOfferPropositions = `SELECT t1.id, t1.user_id, t1.offer_id, t1.specific_cv, (CASE WHEN t1.status = "pending" THEN "En attente" WHEN t1.status = "accepted" THEN "Acceptée" ELSE "Rejetée" END) status, t1.proposition_initiative, t1.date, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) user_name, t2.email, t2.telephone FROM propositions t1 INNER JOIN users t2 ON t2.id = t1.user_id WHERE offer_id = ?`;
 
@@ -252,11 +274,11 @@ t6.email entreprise_contact_email,
 t6.telephone entreprise_contact_telephone,
 
 t7.city search_preferences_city,
-t7.stack search_preferences_stack,
-t7.job_field search_preferences_job_field,
+t7.query search_preferences_stack,
+t7.job_fields search_preferences_job_field,
 t7.compensation search_preferences_compensation,
-t7.entreprise_size search_preferences_entreprise_size,
-t7.industry search_preferences_industry,
+t7.entreprise_sizes search_preferences_entreprise_size,
+t7.industries search_preferences_industry,
 t7.remote_days search_preferences_remote_days,
 t7.education search_preferences_education
 
@@ -286,9 +308,15 @@ module.exports = {
     getUsers,
     getNumberOfUsers,
     getUserById,
+    getUserByEmail,
     getUserSearchPreferences,
     getUserPropositions,
     getUserFavorites,
+    getUserResume,
+    registerUser,
+    modifyUserInfo,
+    modifyUserSearchPreferences,
+    modifyUserResume,
     getEntreprises,
     getNumberOfEntreprises,
     getEntrepriseById,

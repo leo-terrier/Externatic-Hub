@@ -5,16 +5,21 @@ import {
   createOffer,
   getEntrepriseContacts,
 } from "@services/APIcall";
-import { useEffect, useState } from "react";
+
+import { useEffect, useRef, useState } from "react";
 
 export default function CreateOfferForm({ loadOffers, entrepriseId }) {
   const [entrepriseContacts, setEntrepriseContacts] = useState([]);
+
+  const addOfferCompleteRef = useRef(null);
 
   // Form data
   // // New offer
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("");
+
   const [geopoints, setGeopoints] = useState([]);
+
   const [jobField, setJobField] = useState("");
   const [stack, setStack] = useState("");
   const [minCompensation, setMinCompensation] = useState("");
@@ -102,6 +107,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               city={city}
               setCity={setCity}
               setGeopoints={setGeopoints}
+              autoCompleteRef={addOfferCompleteRef}
             />
           </div>
           <div className="w-96 flex gap-8">
