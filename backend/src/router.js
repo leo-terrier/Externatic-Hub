@@ -1,17 +1,61 @@
 const express = require("express");
 const {
-  getOffers,
-  getEntreprises,
-  getCandidates,
+  allOffers,
+  offerById,
+  offerPropositions,
+  allUsers,
+  userById,
+  userSearchPreferences,
+  userPropositions,
+  userFavorites,
+  userResume,
+  allEntreprises,
+  entrepriseById,
+  entrepriseOffers,
+  propositionById,
+  propositionMessages,
+  propositionInterviews,
+  addEntreprise,
+  addEntrepriseContact,
+  addOffer,
+  entrepriseContacts,
+  retreiveUserSession,
+  userModifyInfo,
+  userModifySearchPreferences,
+  userModifyResume,
 } = require("./controllers/controllers");
 
 const router = express.Router();
 
 /* const itemControllers = require("./controllers/itemControllers");
  */
-router.get("/offers", getOffers);
-router.get("/entreprises", getEntreprises);
-router.get("/candidates", getCandidates);
+router.get("/offers", allOffers);
+router.get("/offers/:id", offerById);
+router.get("/offers/:id/propositions", offerPropositions);
+router.post("/offers", addOffer);
+
+router.get("/users", allUsers);
+router.get("/users/:id", userById);
+router.get("/users/:id/preferences", userSearchPreferences);
+router.get("/users/:id/propositions", userPropositions);
+router.get("/users/:id/favorites", userFavorites);
+router.get("/users/:id/resumes", userResume);
+router.put("/users/:id", userModifyInfo);
+router.put("/users/:id/preferences", userModifySearchPreferences);
+router.put("/users/:id/resumes", userModifyResume);
+
+router.get("/entreprises", allEntreprises);
+router.get("/entreprises/:id", entrepriseById);
+router.get("/entreprises/:id/offers", entrepriseOffers);
+router.get("/entreprises/:id/contacts", entrepriseContacts);
+router.post("/entreprises", addEntreprise);
+router.post("/entreprises/:id/contacts", addEntrepriseContact);
+
+router.get("/propositions/:id", propositionById);
+router.get("/propositions/:id/messages", propositionMessages);
+router.get("/propositions/:id/interviews", propositionInterviews);
+
+router.get("/user-session", retreiveUserSession);
 
 /* router.get("/items", itemControllers.browse);
 router.get("/items/:id", itemControllers.read);

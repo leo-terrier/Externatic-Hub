@@ -1,6 +1,75 @@
-html,
-#root,
-body,
-.App {
-  height: 100%;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-zinc-800;
+    @apply box-border;
+  }
+  html,
+  body,
+  #root,
+  .App {
+    @apply min-h-screen;
+  }
+  h1 {
+    @apply text-3xl;
+    @apply mb-10;
+    @apply font-extrabold;
+  }
+  h2 {
+    @apply text-2xl;
+    @apply mb-4;
+    @apply font-extrabold;
+  }
+  h3 {
+    @apply text-xl;
+    @apply mb-4;
+    @apply font-bold;
+  }
+  h4 {
+    @apply text-lg;
+    @apply mb-2;
+    @apply font-bold;
+  }
+  p {
+    @apply mb-2;
+    @apply leading-5;
+  }
+  input,
+  select {
+    @apply border-[1px];
+    @apply border-slate-700;
+    @apply rounded-sm;
+    @apply p-2;
+    @apply placeholder-gray-600;
+  }
+  textarea {
+    @apply border-[1px];
+    @apply border-slate-700;
+    @apply rounded-sm;
+    @apply p-2;
+  }
+  .pac-item {
+    @apply hidden;
+  }
+  .pac-container:after {
+    @apply hidden;
+  }
+  div.pac-container.pac-logo {
+    @apply shadow-none;
+  }
+}
+.pac-container {
+  z-index: 10000 !important;
+}
+
+.pac-item :nth-child(3) {
+  display: none;
+}
+
+div.pac-container ::after {
+  content: none;
+  display: none;
 }
