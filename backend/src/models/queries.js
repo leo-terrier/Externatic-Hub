@@ -34,7 +34,8 @@ const getNumberOfUsers = (query) => {
   return `SELECT COUNT(*) totalCount FROM users t1 ${whereClause(query)}`;
 };
 
-const getUserById = "SELECT * FROM users WHERE id = ?;";
+const getUserById =
+  "SELECT id, CONCAT(firstname, ' ', UPPER(lastname)) user, email, telephone, favcontactmethod, city, is_active, has_alerts FROM users WHERE id = ?;";
 
 const getUserByEmail = "SELECT * FROM users WHERE email = ?;";
 
@@ -42,7 +43,7 @@ const getUserSearchPreferences =
   "SELECT * FROM search_preferences WHERE user_id = ?;";
 
 const getUserPropositions =
-  "SELECT t1.id, t1.offer_id, t1.date, t2.title, t2.city, t2.job_field, t3.name entreprise_name, (CASE WHEN t1.status = 'pending' THEN 'En Attente' WHEN t1.status = 'accepted' THEN 'Acceptée' ELSE 'Rejetée' END) status, t1.proposition_initiative  FROM propositions t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t3.id = t2.entreprise_id WHERE t1.user_id = ?";
+  "SELECT t1.id, t1.user_id, t1.offer_id, t1.date, t2.title, t1.proposition_resume_id, t2.city, t2.job_field, t3.name entreprise_name, (CASE WHEN t1.status = 'pending' THEN 'En attente' WHEN t1.status = 'accepted' THEN 'Acceptée' ELSE 'Rejetée' END) status, t1.proposition_initiative  FROM propositions t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t3.id = t2.entreprise_id WHERE t1.user_id = ?";
 
 const getUserFavorites =
   "SELECT t1.offer_id id, t2.date, t2.title, t2.job_field, t2.stack, t2.city, (CASE WHEN t2.status = 'active' THEN 'Active' WHEN t2.status = 'filled' THEN 'Pourvue' ELSE 'Non-pourvue' END) status, t3.name entreprise_name, CONCAT(t4.firstname, ' ', UPPER(t4.lastname)) consultant FROM favorite_offers t1 INNER JOIN offers t2 on t1.offer_id = t2.id INNER JOIN entreprises t3 on t2.entreprise_id = t3.id  INNER JOIN consultants t4 on t2.consultant_id = t4.id WHERE t1.user_id = ?";
@@ -54,16 +55,44 @@ const getUserResume =
 
 const registerUser = "INSERT INTO users (email, password) VALUES (?, ?)";
 
+const createBlankSearchPreferences =
+  "INSERT into search_preferences (user_id, query, city, job_fields, entreprise_sizes, industries, compensation, geopoints) values (?, null, null, null, null, null, null, null);";
+
+const createBlankResume =
+  "INSERT into resumes (user_id, cv, exp_1_title, exp_1_content, exp_1_entreprise, exp_1_duration, exp_2_title, exp_2_content, exp_2_entreprise, exp_2_duration) values (?, null, null,null, null, null, null, null, null,  null);";
+
+const addFavoriteOffer =
+  "INSERT INTO favorite_offers (user_id, offer_id) VALUES (?, ?)";
+
+const addPropositionResume = `INSERT INTO proposition_resumes ( exp_1_title, exp_1_content, exp_1_entreprise, exp_1_duration, exp_2_title, exp_2_content, exp_2_entreprise, exp_2_duration, cv, user_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+const createMessageThread =
+  "INSERT INTO message_threads (user_id, object, consultant_id) VALUES (?, ?, ?)";
+
+const createMessage =
+  "INSERT INTO messages (message_thread_id, content, origin) VALUES (?, ?, ?);";
+
 // // PUT
 
 const modifyUserInfo =
-  "UPDATE users set lastname = ?, firstname=?, email = ?, telephone = ?, favcontactmethod = ?, city = ?, is_active = ? WHERE id = ?";
+  "UPDATE users SET lastname = ?, firstname=?, email = ?, telephone = ?, favcontactmethod = ?, city = ?, is_active = ? WHERE id = ?";
 
-const modifyUserSearchPreferences =
-  "UPDATE search_preferences set query = ?, city = ?, job_fields = ?, entreprise_sizes = ? , industries = ?, compensation = ?, min_remote_days = ?, max_remote_days = ?, geopoints = NULL, distance = NULL WHERE user_id = ?";
+const toggleHasAlerts =
+  "UPDATE users set has_alerts = !has_alerts WHERE id = ?;";
 
-const modifyUserResume =
-  "UPDATE resumes set cv = NULL, exp_1_title = ?, exp_1_content = ?, exp_1_entreprise = ?, exp_1_duration = ?,  exp_2_title = ?, exp_2_content = ?, exp_2_entreprise = ?, exp_2_duration = ? WHERE user_id = ? ";
+const modifyUserSearchPreferences = (obj) => {
+  if (obj.geopoints) {
+    return "UPDATE search_preferences set query = ?, city = ?, job_fields = ?, entreprise_sizes = ? , industries = ?, compensation = ?, min_remote_days = ?, max_remote_days = ?, distance = ? , geopoints = POINT(?) WHERE user_id = ?";
+  }
+  return "UPDATE search_preferences set query = ?, city = ?, job_fields = ?, entreprise_sizes = ? , industries = ?, compensation = ?, min_remote_days = ?, max_remote_days = ?, distance = ? WHERE user_id = ?";
+};
+
+const modifyUserResume = `UPDATE resumes set exp_1_title = ?, exp_1_content = ?, exp_1_entreprise = ?, exp_1_duration = ?,  exp_2_title = ?, exp_2_content = ?, exp_2_entreprise = ?, exp_2_duration = ?, cv = ?  WHERE user_id = ? `;
+
+// // DELETE
+
+const deleteFavoriteOffer =
+  "DELETE FROM favorite_offers WHERE user_id = ? AND offer_id = ?";
 
 // OFFERS
 
@@ -84,7 +113,9 @@ const getOffers = (paramObject) => {
   obj.offset = parseInt(obj.offset, 10);
 
   let query = `
-  SELECT t1.id, t1.date, t1.title, t1.city, t1.job_field, t1.min_compensation, t1.max_compensation, t1.stack, t4.name entreprise_name, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id`;
+  SELECT t1.id, t1.consultant_id, t1.date, t1.title, t1.city, t1.job_field, t1.min_compensation, t1.max_compensation, t1.stack, t4.name entreprise_name, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id`;
+
+  /*  let query = ` SELECT t1.id, t1.date, t1.title, t1.city, t1.job_field, t1.min_compensation, t1.max_compensation, t1.stack, t4.name entreprise_name, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status, t5.offer_id favorite_offer_id FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id LEFT JOIN favorite_offers t5 ON t5.offer_id = t1.id AND t5.user_id = ?` */
 
   if (obj.queryStr) {
     str.push(
@@ -101,10 +132,10 @@ const getOffers = (paramObject) => {
     str.push("(t4.industry in (?))");
   }
   if (obj.compensation) {
-    str.push("(t1.max_compensation*1.05 > ?)");
+    str.push("(t1.max_compensation IS NULL OR max_compensation*1.05 > ?)");
   }
   if (obj.minMaxRemoteDays) {
-    str.push('(t1.remote_days = "N/A" OR remote_days BETWEEN ? and ?)');
+    str.push("(t1.remote_days IS NULL OR remote_days BETWEEN ? and ?)");
   }
   if (obj.city) {
     str.push(
@@ -146,9 +177,9 @@ const getNumberOfOffers = (query) => {
 
 // ATT : include table entreprises
 
-const getOfferById = `SELECT t1.id, t1.date, t1.title, t1.city, t1.stack, t1.max_compensation, t1.min_compensation, t1.geopoints, (CASE WHEN t1.remote_days = '0' THEN 'Non' WHEN t1.remote_days = '5' THEN 'full-remote' ELSE t1.remote_days END) remote_days, t1.job_field, t1.education, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status, t1.content, t4.id entreprise_id, t4.name entreprise_name, t4.industry entreprise_industry, t4.size entreprise_size, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) entreprise_contact, t2.job_title entreprise_contact_job_title, t2.email as entreprise_contact_email, t2.telephone as entreprise_contact_telephone, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprise_contacts t2 ON t1.entreprise_contact_id = t2.id INNER JOIN entreprises t4 on t1.entreprise_id = t4.id WHERE t1.id = ?`;
+const getOfferById = `SELECT t1.id, t1.date, t1.title, t1.city, t1.stack, t1.max_compensation, t1.min_compensation, t1.geopoints, (CASE WHEN t1.remote_days = '0' THEN 'Non' WHEN t1.remote_days = '5' THEN 'full-remote' ELSE t1.remote_days END) remote_days, t1.job_field, t1.education, (CASE WHEN t1.status = "active" THEN "Active" WHEN t1.status = "filled" THEN "Pourvue" ELSE "Non-pourvue" END) status, t1.content, t4.id entreprise_id, t4.name entreprise_name, t4.industry entreprise_industry, t4.size entreprise_size, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) entreprise_contact, t2.job_title entreprise_contact_job_title, t2.email as entreprise_contact_email, t2.telephone as entreprise_contact_telephone, CONCAT(t3.firstname, ' ', UPPER(t3.lastname)) consultant, t3.id consultant_id, (CASE WHEN t5.offer_id IS NOT NULL THEN TRUE ELSE FALSE END) is_favorite, (CASE WHEN t6.offer_id IS NOT NULL THEN TRUE ELSE FALSE END) has_applied FROM offers t1 INNER JOIN consultants t3 ON t1.consultant_id = t3.id INNER JOIN entreprise_contacts t2 ON t1.entreprise_contact_id = t2.id INNER JOIN entreprises t4 ON t1.entreprise_id = t4.id LEFT JOIN favorite_offers t5 ON t5.offer_id = t1.id AND t5.user_id = ?  LEFT JOIN propositions t6 ON t6.offer_id = t1.id AND t6.user_id  = ? WHERE t1.id = ?`;
 
-const getOfferPropositions = `SELECT t1.id, t1.user_id, t1.offer_id, t1.specific_cv, (CASE WHEN t1.status = "pending" THEN "En attente" WHEN t1.status = "accepted" THEN "Acceptée" ELSE "Rejetée" END) status, t1.proposition_initiative, t1.date, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) user_name, t2.email, t2.telephone FROM propositions t1 INNER JOIN users t2 ON t2.id = t1.user_id WHERE offer_id = ?`;
+const getOfferPropositions = `SELECT t1.id, t1.user_id, t1.offer_id, t1.proposition_resume_id, (CASE WHEN t1.status = "pending" THEN "En attente" WHEN t1.status = "accepted" THEN "Acceptée" ELSE "Rejetée" END) status, t1.proposition_initiative, t1.date, CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) user_name, t2.email, t2.telephone FROM propositions t1 INNER JOIN users t2 ON t2.id = t1.user_id WHERE offer_id = ?`;
 
 // // POST
 const createOffer = (paramObj) => {
@@ -164,6 +195,12 @@ const createOffer = (paramObj) => {
   ];
   return [query, parameters];
 };
+
+// // PUT
+
+const changeOfferStatusToUnfilled = `UPDATE offers SET status = 'unfilled' WHERE id = ?;`;
+
+const changePendingUserPropositionsToRejected = `UPDATE propositions set status = rejected WHERE proposition_initiative = 'user' AND status = 'pending' WHERE offer_id = ?;`;
 
 // // ENTREPRISES
 
@@ -236,19 +273,21 @@ const createEntreprise =
 const createEntrepriseContact = `INSERT INTO entreprise_contacts (firstname, lastname, job_title, email, telephone, entreprise_id) VALUES (?, ?, ?, ?, ?, ?);`;
 
 // PROPOSITION
+
+// // GET
+
 const getPropositionById = `SELECT
-t1.specific_cv proposition_specific_cv,
-(CASE WHEN t1.status = "pending" THEN "En attente" WHEN t1.status = "rejected" THEN "Rejetée" ELSE "Acceptée" END) proposition_status,
-t1.date proposition_date,
-t1.proposition_initiative proposition_initiative,
+t1.proposition_resume_id,
+(CASE WHEN t1.status = "pending" THEN "En attente" WHEN t1.status = "rejected" THEN "Rejetée" ELSE "Acceptée" END) status,
+t1.date,
+t1.proposition_initiative,
 
 t2.id user_id,
 CONCAT(t2.firstname, ' ', UPPER(t2.lastname)) user,
 t2.email user_email,
-t3.city user_city,
+t2.city user_city,
 t2.telephone user_telephone,
 t2.favcontactmethod user_favcontactmethod,
-t2.cv user_cv,
 (CASE WHEN t2.is_active = 1 THEN 'Actif' ELSE 'Inactif' END) user_status,
 
 t3.id offer_id,
@@ -279,8 +318,8 @@ t7.job_fields search_preferences_job_field,
 t7.compensation search_preferences_compensation,
 t7.entreprise_sizes search_preferences_entreprise_size,
 t7.industries search_preferences_industry,
-t7.remote_days search_preferences_remote_days,
-t7.education search_preferences_education
+t7.min_remote_days search_preferences_min_remote_days,
+t7.max_remote_days search_preferences_max_remote_days
 
 FROM propositions t1
 
@@ -293,18 +332,33 @@ INNER JOIN search_preferences t7 ON t1.user_id = t7.user_id
 
 WHERE t1.id = ?;`;
 
-const getPropositionsMessages = `SELECT t3.content, t3.time, t3.origin
-FROM propositions t1 INNER JOIN message_threads t2 on t2.proposition_id = t1.id INNER JOIN messages t3 on t3.message_thread_id = t2.id WHERE t1.id = ?;`;
-
 const getPropositionInterviews = `SELECT t2.is_visio, t2.date, t2.location FROM propositions t1 INNER JOIN job_interviews t2 on t2.proposition_id = t1.id WHERE t1.id = ?;`;
+
+const getPropositionsMessages = `SELECT t3.id, t3.content, t3.time, t3.origin, t3.message_thread_id FROM propositions t1 INNER JOIN message_threads t2 on t1.message_thread_id = t2.id INNER JOIN messages t3 on t3.message_thread_id = t2.id WHERE t1.id = ?;`;
+
+const getPropositionResume =
+  "SELECT t1.cv, t1.exp_1_title, t1.exp_1_content, t1.exp_1_entreprise, t1.exp_1_duration,t1. exp_2_title, t1.exp_2_content,  t1.exp_2_entreprise, t1.exp_2_duration FROM proposition_resumes t1 INNER JOIN propositions t2 ON t2.proposition_resume_id = t1.id WHERE t2.id = ?";
+
+// // POST
+
+const createProposition =
+  "INSERT INTO propositions (user_id, offer_id, proposition_resume_id, proposition_initiative, message_thread_id) VALUES (?, ?, ?, ?, ?);";
+
+const createPropositionMessage =
+  "INSERT INTO messages (message_thread_id, content, origin) VALUES (?, ?, ?);";
+
+// // PUT
 
 module.exports = {
   queries: {
     getOffers,
     getOfferById,
     getOfferPropositions,
-    createOffer,
     getNumberOfOffers,
+    createOffer,
+    changeOfferStatusToUnfilled,
+    changePendingUserPropositionsToRejected,
+
     getUsers,
     getNumberOfUsers,
     getUserById,
@@ -314,9 +368,18 @@ module.exports = {
     getUserFavorites,
     getUserResume,
     registerUser,
+    createBlankSearchPreferences,
+    createBlankResume,
     modifyUserInfo,
+    toggleHasAlerts,
     modifyUserSearchPreferences,
     modifyUserResume,
+    addFavoriteOffer,
+    addPropositionResume,
+    deleteFavoriteOffer,
+    createMessageThread,
+    createMessage,
+
     getEntreprises,
     getNumberOfEntreprises,
     getEntrepriseById,
@@ -324,8 +387,12 @@ module.exports = {
     getEntrepriseContacts,
     createEntreprise,
     createEntrepriseContact,
+
     getPropositionById,
     getPropositionsMessages,
     getPropositionInterviews,
+    getPropositionResume,
+    createProposition,
+    createPropositionMessage,
   },
 };

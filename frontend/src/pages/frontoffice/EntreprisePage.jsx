@@ -1,9 +1,9 @@
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
+import Underline from "@components/frontandback/Underline";
 import OfferCard from "@components/frontoffice/OfferCard";
 import { Pagination } from "@mui/material";
 import { getEntrepriseById, getEntrepriseOffers } from "@services/APIcall";
-import { Underline } from "@services/utils";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 

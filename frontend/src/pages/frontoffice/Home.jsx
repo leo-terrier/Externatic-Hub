@@ -3,6 +3,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 import { MdAccountCircle, MdOutlineEmail } from "react-icons/md";
+
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import logoExternatic from "../../assets/LogoExternatic.png";
@@ -65,23 +66,23 @@ export default function Home() {
           </Menu>
         </div>
         <ul className="ml-4 hidden md:flex w-10/12  justify-start text-lg  lg:text-xl lg:gap-8">
-          <li className={`font-bold hover:text-rose-700 `}>
+          <li className={`font-bold hover:text-rose-600 `}>
             <Link to="/">Offres d'emploi</Link>
           </li>
-          <li className={`font-bold hover:text-rose-700 `}>
-            <Link to="entreprise">Entreprises partenaires</Link>
+          <li className={`font-bold hover:text-rose-600 `}>
+            <Link to="entreprise">Entreprises</Link>
           </li>
-          <li className={`font-bold hover:text-rose-700 `}>
+          <li className={`font-bold hover:text-rose-600 `}>
             <Link to="entreprise">Accès backoffice</Link>
           </li>
         </ul>
         <ul className="hidden md:flex w-2/12 items-center justify-end text-xl gap-4 lg:text-2xl lg:gap-8">
           <li>
             <div className="flex justify-between gap-4 lg:gap-8">
-              <Link className="hover:text-rose-700">
+              <Link className="hover:text-rose-600">
                 <MdOutlineEmail size="2em" />
               </Link>
-              <Link to="account" className={`hover:text-rose-700 `}>
+              <Link to="account" className={`hover:text-rose-600 `}>
                 <MdAccountCircle size="2em" />
               </Link>
             </div>

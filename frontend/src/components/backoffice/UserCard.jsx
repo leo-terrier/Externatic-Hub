@@ -1,9 +1,9 @@
-import { Boldify } from "@services/utils";
+import Boldify from "@components/frontandback/Boldify";
 import { Link } from "react-router-dom";
 
 export default function UserCard({ user }) {
   return (
-    <li>
+    <li className="text-black">
       <Link to={user.id.toString()} className="relative">
         <h2 className="text-xl mb-0">
           {user.user_name} (id : {user.id})

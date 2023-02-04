@@ -1,6 +1,11 @@
+import { useState } from "react";
+import { RxTriangleRight } from "react-icons/rx";
 import { Link } from "react-router-dom";
+import PropositionDetails from "./PropositionDetails";
 
 export default function PropositionCard({ proposition }) {
+  const [isPropositionOpen, setIsPropositionOpen] = useState(false);
+
   return (
     <li key={proposition.id}>
       <div className="py-3 px-4 bg-rose-100 ">
@@ -36,8 +41,27 @@ export default function PropositionCard({ proposition }) {
           </div>
         </div>
       </div>
+      <PropositionDetails
+        isOpen={isPropositionOpen}
+        propositionId={proposition.id}
+        userId={proposition.user_id}
+      />
       <div className="bg-rose-200 flex justify-center items-center py-1">
-        <p className=" text-rose-800 text-lg mb-0">DETAIL</p>
+        <button
+          type="button"
+          onClick={() => setIsPropositionOpen(!isPropositionOpen)}
+        >
+          <div className="flex w-40 gap-0 justify-center items-center text-rose-800">
+            <div
+              className={`duration-3500 transition-transform ${
+                isPropositionOpen ? "-rotate-90" : "rotate-0"
+              }`}
+            >
+              <RxTriangleRight color="inherit" size="1.7em" />
+            </div>
+            <p className=" text-xl mb-0">DETAILS</p>
+          </div>
+        </button>
       </div>
     </li>
   );

@@ -1,13 +1,14 @@
+import Boldify from "@components/frontandback/Boldify";
 import { UserInfoContext } from "@components/frontandback/UserContext";
 import EditableParagraph from "@components/frontoffice/EditableParagraph";
 import Switch from "@mui/material/Switch";
 import { modifyUserInfo } from "@services/APIcall";
-import { Boldify } from "@services/utils";
+
 import { useContext, useState } from "react";
 import FrontButton from "../../../pages/frontoffice/FrontButton";
 
 export default function PersonalInfo() {
-  const { userInfo } = useContext(UserInfoContext);
+  const { userInfo, setUserInfo } = useContext(UserInfoContext);
 
   const [isEditing, setIsEditing] = useState(false);
   const [lastName, setLastname] = useState(userInfo.lastname);
@@ -31,9 +32,18 @@ export default function PersonalInfo() {
       favContactMethod,
       city,
       isActive,
-      id: userInfo.id,
     };
-    modifyUserInfo(obj);
+    modifyUserInfo(obj, userInfo.id);
+    setUserInfo((prev) => ({
+      ...prev,
+      lastName,
+      firstName,
+      email,
+      telephone,
+      favcontactmethod: favContactMethod,
+      city,
+      isActive,
+    }));
   };
 
   const toggleIsEditing = () => {
@@ -121,9 +131,8 @@ export default function PersonalInfo() {
       <div className="w-2/12 self-end flex justify-center">
         <FrontButton
           content={isEditing ? "SAUVEGARDER" : "EDITER"}
-          type="button"
           onClick={toggleIsEditing}
-          isPrimary={isEditing}
+          buttonType={isEditing ? "primary" : "secondary"}
         />
       </div>
     </div>

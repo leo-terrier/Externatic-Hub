@@ -53,9 +53,9 @@ function SearchLocationInput({
   city,
   setCity,
   setGeopoints,
-  /* tailwindClasses , */
+  tailwindClasses,
   autoCompleteRef,
-  placeholder,
+  placeholder = "",
 }) {
   const store = useContext(UserInfoContext);
   console.log(store);
@@ -82,6 +82,7 @@ function SearchLocationInput({
       }}
       placeholder={placeholder}
       value={city}
+      className={tailwindClasses}
     />
   );
 }

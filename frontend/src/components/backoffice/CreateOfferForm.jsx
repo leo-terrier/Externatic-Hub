@@ -75,6 +75,11 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
     });
     await loadOffers();
     loadEntrepriseContacts();
+    setContactFirstname("");
+    setContactLastname("");
+    setContactJobTitle("");
+    setContactEmail("");
+    setContactTelephone("");
   };
 
   useEffect(loadEntrepriseContacts, []);
@@ -85,7 +90,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
         <h2>Nouvelle Offre</h2>
         <h3>Détails de l'offre</h3>
         <div className="flex flex-wrap gap-12">
-          <div className="w-full flex gap-8">
+          <div className="w-full flex gap-8 items-center">
             <label htmlFor="title">Titre : </label>
             <input
               type="text"
@@ -95,7 +100,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               className="w-96"
             />
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="city">Ville : </label>
             {/* <input
               type="text"
@@ -110,7 +115,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               autoCompleteRef={addOfferCompleteRef}
             />
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="jobField">Domaine : </label>
             <select
               id="jobField"
@@ -122,7 +127,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               })}
             </select>
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="stack">Technologies : </label>
             <input
               type="text"
@@ -131,7 +136,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               onChange={(e) => setStack(e.target.value)}
             />
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="education">Diplôme requis : </label>
             <input
               type="text"
@@ -140,7 +145,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               onChange={(e) => setEducation(e.target.value)}
             />
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="minCompensation">Salaire min :</label>
             <input
               type="number"
@@ -149,7 +154,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               onChange={(e) => setMinCompensation(e.target.value)}
             />
           </div>
-          <div className="w-96 flex gap-8">
+          <div className="w-96 flex gap-8 items-center">
             <label htmlFor="maxCompensation"> Salaire max : </label>
             <input
               type="number"
@@ -158,7 +163,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               onChange={(e) => setMaxCompensation(e.target.value)}
             />
           </div>
-          <div className="w-full flex gap-8">
+          <div className="w-full flex gap-8 items-center">
             <label htmlFor="remoteDays">
               Nombre de jours de télétravail autorisés par semaine
             </label>
@@ -176,13 +181,13 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
               <option value="5">Full-remote</option>
             </select>
           </div>
-          <div className="w-full flex gap-8 h-[400px]">
+          <div className="w-full flex gap-8 items-center h-[400px]">
             <textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Contenu de l'offre..."
-              className="w-4/5 p-2"
+              className="w-4/5 p-2 self-stretch"
             />
           </div>
         </div>
@@ -191,7 +196,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
         <h3>Personne de contact au sein de l'entreprise</h3>
         <div className="flex flex-wrap gap-12">
           {entrepriseContacts.length > 0 && (
-            <div className="w-full flex gap-8">
+            <div className="w-full flex gap-8 items-center">
               <label htmlFor="selectedContactId">
                 Selectionner la personne de contact au sein de l'entreprise :{" "}
               </label>
@@ -216,7 +221,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
 
           {(!entrepriseContacts.length > 0 || selectedContactId === "") && (
             <>
-              <div className="w-96 flex gap-8">
+              <div className="w-96 flex gap-8 items-center">
                 {" "}
                 <label htmlFor="contactFirstname">Prénom : </label>
                 <input
@@ -226,7 +231,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
                   type="text"
                 />
               </div>
-              <div className="w-96 flex gap-8">
+              <div className="w-96 flex gap-8 items-center">
                 {" "}
                 <label htmlFor="contactLastname">Nom : </label>
                 <input
@@ -236,7 +241,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
                   type="text"
                 />
               </div>
-              <div className="w-96 flex gap-8">
+              <div className="w-96 flex gap-8 items-center">
                 {" "}
                 <label htmlFor="contactJobTitle">Fonction : </label>
                 <input
@@ -246,7 +251,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
                   type="text"
                 />
               </div>
-              <div className="w-96 flex gap-8">
+              <div className="w-96 flex gap-8 items-center">
                 {" "}
                 <label htmlFor="contactEmail">Email : </label>
                 <input
@@ -256,7 +261,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
                   type="text"
                 />
               </div>
-              <div className="w-96 flex gap-8">
+              <div className="w-96 flex gap-8 items-center">
                 {" "}
                 <label htmlFor="contactTelephone">Tel : </label>
                 <input
@@ -277,7 +282,7 @@ export default function CreateOfferForm({ loadOffers, entrepriseId }) {
       <div className="flex justify-center">
         <button
           type="button"
-          className="text-2xl w-3/5 font-bold border-2 p-[20px] rounded-md text-slate-100 bg-sky-600 hover:bg-sky-800"
+          className="text-2xl w-3/5 font-bold  p-[20px] rounded-md text-slate-100 bg-sky-600 hover:bg-sky-800"
           onClick={(e) => handleCreateOffer(e)}
         >
           AJOUTER OFFRE

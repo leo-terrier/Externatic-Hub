@@ -15,6 +15,28 @@ const fetchFunction = async (url, method = "GET", body = null) => {
   return await response.json();
 };
 
+const sendData = async (url, method, data) => {
+  const formData = new FormData();
+
+  Object.keys(data)
+    .filter((property) => property !== "cv")
+    .forEach((property) => {
+      formData.append(property, data[property]);
+    });
+  if (data.cv?.type) {
+    formData.append("cv", data.cv, data.cv.name);
+  } else {
+    formData.append("cv", data.cv);
+  }
+
+  const response = await fetch(url, {
+    method,
+    credentials: "include",
+    body: formData,
+  });
+  return await response.json();
+};
+
 // ALL
 export const fetchAPIData = async (queryObj, limit, offset, dataPath) => {
   let url = `${backendUrl}/${dataPath}?`;
@@ -27,11 +49,19 @@ export const fetchAPIData = async (queryObj, limit, offset, dataPath) => {
 };
 
 // BACKOFFICE
-export const fetchDataFromTable = async (tableState, dataPath) => {
+export const fetchDataFromTable = async (
+  tableState,
+  dataPath,
+  onlyActiveOffers = false
+) => {
   const { search, pageSize, page, orderBy, orderDirection } = tableState;
   const queryObj = {};
   console.log(tableState);
   if (tableState.search) queryObj.queryStr = search;
+  if (onlyActiveOffers)
+    queryObj.queryStr
+      ? (queryObj.queryStr += " Active")
+      : (queryObj.queryStr = "Active");
   if (tableState.orderBy) {
     queryObj.orderBy = orderBy.mySqlCol;
     queryObj.orderDirection = orderDirection;
@@ -51,39 +81,7 @@ export const fetchDataFromTable = async (tableState, dataPath) => {
   };
 };
 
-// OFFERS
-
-// // GET
-export const getOffers = async (queryObj, limit, offset) => {
-  let url = `${backendUrl}/offers?`;
-  const queryObjProperties = Object.keys(queryObj);
-  if (queryObjProperties.length) {
-    url = url.concat(serializeStrAndArr(queryObj), "&");
-  }
-  url += `limit=${limit}&offset=${offset}`;
-  return await fetchFunction(url);
-};
-
-export const getOfferById = async (id) => {
-  return await fetchFunction(backendUrl + "/offers/" + id);
-};
-
-export const getOfferPropositions = async (id) => {
-  return await fetchFunction(backendUrl + "/offers/" + id + "/propositions");
-};
-
-// // POST
-
-export const createOffer = async (obj) => {
-  //deleting empty values from obj
-  const bodyData = Object.fromEntries(
-    Object.entries(obj).filter(([_, v]) => v != null && v != "")
-  );
-
-  fetchFunction(backendUrl + "/offers", "POST", bodyData);
-};
-
-// USERS
+//  USERS
 
 // // GET
 
@@ -138,25 +136,108 @@ export const registerUser = async (email, password) => {
   });
 };
 
+export const createFavoriteOffer = async (userId, offerId) => {
+  return await fetchFunction(
+    backendUrl + "/users/" + userId + "/favorites",
+    "POST",
+    { offerId }
+  );
+};
+
+export const addPropositionResume = async (obj, userId) => {
+  return await sendData(
+    backendUrl + "/users/" + userId + "/proposition-resumes",
+    "POST",
+    obj
+  );
+};
+
+export const createMessageThread = async (obj, userId) => {
+  return await fetchFunction(
+    backendUrl + "/users/" + userId + "/message-threads",
+    "POST",
+    obj
+  );
+};
+
 // // PUT
-export const modifyUserInfo = async (obj) => {
-  return await fetchFunction(backendUrl + "/users/" + obj.id, "PUT", obj);
+export const modifyUserInfo = async (obj, userId) => {
+  return await fetchFunction(backendUrl + "/users/" + userId, "PUT", obj);
 };
 
-export const modifyUserSearchPreferences = async (obj) => {
+export const toggleHasAlerts = async (userId) => {
+  return await fetchFunction(backendUrl + "/users/" + userId, "PUT");
+};
+
+export const modifyUserSearchPreferences = async (obj, userId) => {
+  const payload = {
+    query: obj.queryStr,
+    city: obj.city,
+    jobFields: obj.jobFields.join(),
+    entrepriseSizes: obj.entrepriseSizes.join(),
+    industries: obj.industries.join(),
+    compensation: obj.compensation || null,
+    maxRemoteDays: obj.minMaxRemoteDays[0],
+    minRemoteDays: obj.minMaxRemoteDays[1],
+    distance: obj.distance,
+    geopoints: obj.geopoints,
+  };
   return await fetchFunction(
-    `${backendUrl}/users/${obj.id}/preferences`,
+    `${backendUrl}/users/${userId}/preferences`,
     "PUT",
-    obj
+    payload
   );
 };
 
-export const modifyUserResume = async (obj) => {
+export const modifyUserResume = (obj, userId) => {
+  sendData(`${backendUrl}/users/${userId}/resumes`, "PUT", obj);
+};
+
+// // DELETE
+
+export const deleteFavoriteOffer = async (userId, offerId) => {
   return await fetchFunction(
-    `${backendUrl}/users/${obj.id}/resumes`,
-    "PUT",
-    obj
+    backendUrl + "/users/" + userId + "/favorites",
+    "DELETE",
+    { offerId }
   );
+};
+
+// OFFERS
+
+// // GET
+export const getOffers = async (queryObj, limit, offset) => {
+  let url = `${backendUrl}/offers?`;
+  const queryObjProperties = Object.keys(queryObj);
+  if (queryObjProperties.length) {
+    url = url.concat(serializeStrAndArr(queryObj), "&");
+  }
+  url += `limit=${limit}&offset=${offset}`;
+  return await fetchFunction(url);
+};
+
+export const getOfferById = async (id) => {
+  return await fetchFunction(backendUrl + "/offers/" + id);
+};
+
+export const getOfferPropositions = async (id) => {
+  return await fetchFunction(backendUrl + "/offers/" + id + "/propositions");
+};
+
+// // POST
+
+export const createOffer = async (obj) => {
+  //deleting empty values from obj
+  const bodyData = Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v != null && v != "")
+  );
+
+  fetchFunction(backendUrl + "/offers", "POST", bodyData);
+};
+
+export const changeOfferStatusToUnfilled = async (offerId) => {
+  const offer = await fetchFunction(backendUrl + "/offers/" + offerId, "PUT");
+  return offer;
 };
 
 // // ENTREPRISES
@@ -198,6 +279,8 @@ export const createEntrepriseContact = async (obj) => {
 
 //Proposition
 
+// // GET
+
 export const getPropositionById = async (id) => {
   return await fetchFunction(backendUrl + "/propositions/" + id);
 };
@@ -209,5 +292,25 @@ export const getPropositionMessages = async (id) => {
 export const getPropositionInterviews = async (id) => {
   return await fetchFunction(
     backendUrl + "/propositions/" + id + "/interviews"
+  );
+};
+
+export const getPropositionResume = async (propositionId) => {
+  return await fetchFunction(
+    backendUrl + "/propositions/" + propositionId + "/resumes"
+  );
+};
+
+// // POST
+
+export const createProposition = async (obj) => {
+  return await fetchFunction(backendUrl + "/propositions", "POST", obj);
+};
+
+export const createPropositionMessage = async (obj, propositionId) => {
+  return await fetchFunction(
+    `${backendUrl}/propositions/${propositionId}/messages`,
+    "POST",
+    obj
   );
 };

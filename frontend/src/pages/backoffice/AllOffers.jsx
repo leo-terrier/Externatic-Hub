@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { Pagination } from "@mui/material";
-import useWindowDimensions from "@services/utils";
-import MaterialTable from "material-table";
-import { useNavigate } from "react-router-dom";
-import resolveConfig from "tailwindcss/resolveConfig";
 import OfferCard from "@components/backoffice/OfferCard";
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
+import { Pagination } from "@mui/material";
 import { fetchAPIData, fetchDataFromTable } from "@services/APIcall";
+import useWindowDimensions from "@services/utils";
+import MaterialTable from "material-table";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import resolveConfig from "tailwindcss/resolveConfig";
 
 const config = "../../../tailwind.config";
 

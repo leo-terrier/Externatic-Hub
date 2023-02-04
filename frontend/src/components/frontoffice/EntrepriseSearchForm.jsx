@@ -3,6 +3,7 @@ import {
   entrepriseSizeOptions,
 } from "@assets/form-options/form-options";
 import { Modal, Zoom } from "@mui/material";
+import FrontButton from "@pages/frontoffice/FrontButton";
 import { toggleLikeAccordion } from "@services/utils";
 import { useEffect, useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
@@ -44,9 +45,6 @@ export default function EntrepriseSearchForm({ handleSearch, offset }) {
 
   return (
     <form className="flex flex-col items-center  w-full gap-8">
-      <h1 className="text-2xl sm:text-3xl mb-2 sm:mb-4 text-center">
-        Recherche d'entreprise
-      </h1>
       <div className="flex flex-col gap-2 w-full sm:flex-row">
         <input
           value={queryStr}
@@ -55,13 +53,7 @@ export default function EntrepriseSearchForm({ handleSearch, offset }) {
           onChange={(e) => setQueryStr(e.target.value)}
           placeholder="Nom de l'entreprise, secteur, description,  etc..."
         />
-        <button
-          type="button"
-          className="h-[50px] right-[-100px] text-white bg-blue-700 hover:bg-blue-800 text-lg rounded-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700"
-          onClick={handleSubmit}
-        >
-          Search
-        </button>
+        <FrontButton onClick={handleSubmit} content="CHERCHER" />
       </div>
       <EntrepriseSearchAppliedFilters
         entrepriseSizes={entrepriseSizes}
@@ -69,15 +61,14 @@ export default function EntrepriseSearchForm({ handleSearch, offset }) {
         industries={industries}
         setIndustries={setIndustries}
       />
-      <button
-        type="button"
+      <FrontButton
         onClick={() => {
           setIsFiltersOpen(!isFiltersOpen);
         }}
-        className="hover:text-blue-700 font-semibold m-2 font-slate-800 underline underline-offset-2"
-      >
-        PLUS DE CRITERES
-      </button>
+        buttonType="secondary"
+        content="PLUS DE CRITERES"
+      />
+
       <Modal
         open={isFiltersOpen}
         onClose={() => setIsFiltersOpen(false)}

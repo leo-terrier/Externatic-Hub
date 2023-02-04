@@ -1,9 +1,10 @@
 import { UserInfoContext } from "@components/frontandback/UserContext";
 import Propositions from "@components/frontoffice/accountNav/Propositions";
-import AccountNavButton from "@components/frontoffice/AccountNavButton";
+import AccountNavButton from "@components/frontoffice/accountNav/AccountNavButton";
 import { logout } from "@services/APIcall";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Alerts from "@components/frontoffice/accountNav/Alerts";
 import Applications from "../../components/frontoffice/accountNav/Applications";
 import FavoriteOffers from "../../components/frontoffice/accountNav/FavoriteOffers";
 import PersonalInfo from "../../components/frontoffice/accountNav/PersonalInfo";
@@ -27,7 +28,8 @@ export default function MyAccount() {
 
   const accountNav = {
     "Mes informations personnelles": <PersonalInfo />,
-    "Mes préférences de recherches": <SearchPreferences />,
+    "Mes critères de recherche": <SearchPreferences />,
+    "Mes alertes": <Alerts />,
     "Mon CV": <Resume />,
     "Mes offres sauvegardées": <FavoriteOffers />,
     "Mes candidatures": <Applications />,
@@ -68,11 +70,7 @@ export default function MyAccount() {
         </section>
       </div>
       <div className="flex justify-center">
-        <FrontButton
-          onClick={handleLogout}
-          content="Se déconnecter"
-          isPrimary
-        />
+        <FrontButton onClick={handleLogout} content="Se déconnecter" />
       </div>
     </div>
   );

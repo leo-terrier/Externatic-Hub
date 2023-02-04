@@ -1,4 +1,5 @@
-import { addThousandSeparator, Boldify } from "@services/utils";
+import Boldify from "@components/frontandback/Boldify";
+import { addThousandSeparator } from "@services/utils";
 import { IoMdClose } from "react-icons/io";
 
 export default function OfferSearchAppliedFilters({
@@ -110,7 +111,10 @@ export default function OfferSearchAppliedFilters({
         </div>
       </li>
     );
-  if (minMaxRemoteDays[0] !== 0 || minMaxRemoteDays[1] !== 5)
+  if (
+    minMaxRemoteDays[0] !== (0).toString() ||
+    minMaxRemoteDays[1] !== (5).toString()
+  )
     filterList.push(
       <li>
         <div className=" flex items-center gap-1 bg-gray-300 border-[1.5px] border-slate-800 rounded p-2">

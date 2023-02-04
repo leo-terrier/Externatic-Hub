@@ -1,13 +1,23 @@
+import ChangeStatusModal from "@components/backoffice/ChangeStatusModal";
+import Boldify from "@components/frontandback/Boldify";
+import Underline from "@components/frontandback/Underline";
+
+import FrontButton from "@pages/frontoffice/FrontButton";
+import {
+  changeOfferStatusToUnfilled,
+  getOfferById,
+  getOfferPropositions,
+} from "@services/APIcall";
 import MaterialTable from "material-table";
 import { useEffect, useState } from "react";
+import { BsPencilSquare } from "react-icons/bs";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getOfferById, getOfferPropositions } from "@services/APIcall";
-import { Boldify, Underline } from "@services/utils";
 
 export default function Offer() {
   const [info, setInfo] = useState({});
   const [propositionsMade, setPropositionsMade] = useState([]);
   const [propositionsReceived, setPropositionsReceived] = useState([]);
+  const [isChangeStatusModalOpen, setIsChangeStatusModalOpen] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -56,6 +66,12 @@ export default function Offer() {
     pageSizeOptions: [10, 20, 30],
   };
 
+  const handleChangeStatusToUnfilled = () => {
+    setInfo((prev) => ({ ...prev, status: "Non-pourvue" }));
+    changeOfferStatusToUnfilled(id);
+    setIsChangeStatusModalOpen(false);
+  };
+
   const loadingOfferAndPropositions = () => {
     getOfferById(id).then((res) => {
       setInfo(res);
@@ -92,18 +108,50 @@ export default function Offer() {
               <Boldify>Consultant : </Boldify>
               {info.consultant}
             </p>
-            <p
-              className={`font-bold ${
-                info.status === "Active"
-                  ? "text-green-500"
-                  : info.status === "Pourvue"
-                  ? "text-purple-500"
-                  : "text-red-500"
-              }`}
-            >
-              <Boldify>Statut : </Boldify>
-              {info.status}
-            </p>
+            <div className="group relative">
+              <p>
+                <Boldify>Statut : </Boldify>
+                <span
+                  className={`font-bold ${
+                    info.status === "Active"
+                      ? "text-green-500"
+                      : info.status === "Pourvue"
+                      ? "text-purple-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {info.status}
+                </span>
+              </p>
+              {info.status === "Active" && (
+                <button
+                  type="button"
+                  onClick={() => setIsChangeStatusModalOpen(true)}
+                  className=" absolute right-0 top-[-5px]  p-2 rounded-full group-hover:border"
+                >
+                  <BsPencilSquare />
+                </button>
+              )}
+              <ChangeStatusModal
+                isChangeStatusModalOpen={isChangeStatusModalOpen}
+                setIsChangeStatusModalOpen={setIsChangeStatusModalOpen}
+              >
+                <FrontButton
+                  onClick={handleChangeStatusToUnfilled}
+                  content="Offre Non-pourvue "
+                  buttonType="warning"
+                />
+
+                <p className="font-extrabold text-sm mt-4 text-center">
+                  Passez cette offre en "Non-pourvue" si elle est devenue
+                  inactive sans recrutement Externatic (action définitive).
+                </p>
+                <p className="text-sm">
+                  Les candidats recevront un email les informant du rejet de
+                  leur candidature.
+                </p>
+              </ChangeStatusModal>
+            </div>
             <p>
               <Underline>Secteur d'activité</Underline> :{" "}
               {info.entreprise_industry}
@@ -125,19 +173,44 @@ export default function Offer() {
             {info.job_field}
           </p>
           <p>
-            <Boldify>Technos :</Boldify> {info.stack}
+            <Boldify>Technos :</Boldify>{" "}
+            {info.stack ? (
+              info.stack
+            ) : (
+              <Underline className="italic">Non spécifié</Underline>
+            )}
           </p>
           <p>
             <Boldify>Salaire min : </Boldify>
-            {info.min_compensation.toLocaleString()} €
+            {info.min_compensation ? (
+              `${info.min_compensation.toLocaleString()}€`
+            ) : (
+              <Underline className="italic">Non spécifié</Underline>
+            )}
           </p>
           <p>
             <Boldify>Salaire max : </Boldify>
-            {info.max_compensation.toLocaleString()} €
+            {info.max_compensation ? (
+              `${info.max_compensation.toLocaleString()}€`
+            ) : (
+              <Underline className="italic">Non spécifié</Underline>
+            )}
           </p>
           <p>
             <Boldify>Télétravail autorisé : </Boldify>
-            {info.remote_days} {/\d/.test(info.remote_days) && "jour(s)"}
+            {info.remote_days ? (
+              `${info.remote_days} jour(s)`
+            ) : (
+              <Underline className="italic">Non spécifié</Underline>
+            )}
+          </p>
+          <p>
+            <Boldify>Diplôme requis : </Boldify>
+            {info.education ? (
+              info.education
+            ) : (
+              <Underline className="italic">Non spécifié</Underline>
+            )}
           </p>
         </section>
         <section>

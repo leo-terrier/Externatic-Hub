@@ -1,16 +1,109 @@
+import ResumeNotEditable from "@components/frontandback/ResumeNotEditable";
+import { UserInfoContext } from "@components/frontandback/UserContext";
 import Modal from "@mui/material/Modal";
-import { useState } from "react";
+import FrontButton from "@pages/frontoffice/FrontButton";
+import {
+  addPropositionResume,
+  createMessageThread,
+  createProposition,
+  getUserResume,
+} from "@services/APIcall";
+import { propositionSentNotification } from "@services/notificationStore";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ResumeForm from "./ResumeForm";
 
 export default function ApplicationModal({
   title,
   isApplicationModalOpen,
   setIsApplicationModalOpen,
+  offerId,
+  consultantId,
 }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  // const [CV, setCV] = useState("");
+  const { userInfo } = useContext(UserInfoContext);
+  const { id: userId } = userInfo;
+  const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+
+  // Form data
+  const [cv, setCv] = useState();
+  const [exp1Title, setExp1Title] = useState();
+  const [exp1Content, setExp1Content] = useState();
+  const [exp1Entreprise, setExp1Entreprise] = useState();
+  const [exp1Duration, setExp1Duration] = useState();
+  const [exp2Title, setExp2Title] = useState();
+  const [exp2Content, setExp2Content] = useState();
+  const [exp2Entreprise, setExp2Entreprise] = useState();
+  const [exp2Duration, setExp2Duration] = useState();
   const [message, setMessage] = useState("");
-  console.log(email);
+
+  const getResume = async () => {
+    const [resume] = await getUserResume(userId);
+    setCv({ name: resume.cv });
+    setExp1Title(resume.exp_1_title);
+    setExp1Content(resume.exp_1_content);
+    setExp1Entreprise(resume.exp_1_entreprise);
+    setExp1Duration(resume.exp_1_duration);
+    setExp2Entreprise(resume.exp_2_entreprise);
+    setExp2Title(resume.exp_2_title);
+    setExp2Content(resume.exp_2_content);
+    setExp2Duration(resume.exp_2_duration);
+  };
+
+  const toggleIsEditing = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const sendApplication = async () => {
+    const payload = {
+      exp1Title,
+      exp1Content,
+      exp1Entreprise,
+      exp1Duration,
+      exp2Title,
+      exp2Content,
+      exp2Entreprise,
+      exp2Duration,
+      cv: cv.type ? cv : cv.name ? cv.name : null,
+    };
+    if (cv.type) payload.cv = cv;
+
+    const { insertId: propositionResumeId } = await addPropositionResume(
+      payload,
+      userId
+    );
+
+    const object = `Candidature au poste de ${title}`;
+    const propositionInitiative = "user";
+
+    const messageThread = await createMessageThread(
+      {
+        object,
+        consultantId,
+        content: message,
+        origin: "user",
+      },
+      userId
+    );
+
+    await createProposition({
+      userId,
+      offerId,
+      propositionResumeId,
+      propositionInitiative,
+      messageThreadId: messageThread.insertId,
+    });
+
+    navigate("../../..");
+
+    // Notif
+    propositionSentNotification(propositionInitiative);
+  };
+
+  useEffect(() => {
+    getResume();
+  }, [isApplicationModalOpen]);
+
   return (
     <Modal
       open={isApplicationModalOpen}
@@ -24,59 +117,65 @@ export default function ApplicationModal({
         width: "100%",
       }}
     >
-      <form className="bg-white p-8 sm:p-16 w-10/12 max-w-[700px] flex-col space-y-4">
-        <div>
-          <h1 className="mb-0 text-2xl sm:mb-2 sm:text-3xl">{title}</h1>
-          <h2 className=" text-gray-400 italic mt-0">Candidature</h2>
-        </div>
-        <div className="flex flex-col gap-4 p-1 sm:p-12 items-center ">
-          <div className="flex gap-4 justify-center sm:justify-between items-center w-full sm:px-8 ">
-            <label className="hidden sm:block" htmlFor="name">
-              Nom :
-            </label>
-            <input
-              className="w-auto sm:w-8/12"
-              placeholder="Nom complet"
-              id="email"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+      <div className="bg-white p-8 sm:p-16 w-10/12 max-w-[700px] max-h-screen overflow-y-auto">
+        <h1 className="mb-0 text-2xl sm:mb-2 sm:text-3xl">{title}</h1>
+        <h2 className=" text-gray-400 italic mt-0">Candidature</h2>
+        {!isEditing ? (
+          <ResumeNotEditable
+            exp1Title={exp1Title}
+            exp1Content={exp1Content}
+            exp1Entreprise={exp1Entreprise}
+            exp1Duration={exp1Duration}
+            exp2Title={exp2Title}
+            exp2Content={exp2Content}
+            exp2Entreprise={exp2Entreprise}
+            exp2Duration={exp2Duration}
+            cv={cv}
+          />
+        ) : (
+          <ResumeForm
+            exp1Title={exp1Title}
+            exp1Content={exp1Content}
+            exp1Entreprise={exp1Entreprise}
+            exp1Duration={exp1Duration}
+            exp2Title={exp2Title}
+            exp2Content={exp2Content}
+            exp2Entreprise={exp2Entreprise}
+            exp2Duration={exp2Duration}
+            setCv={setCv}
+            setExp1Title={setExp1Title}
+            setExp1Content={setExp1Content}
+            setExp1Entreprise={setExp1Entreprise}
+            setExp1Duration={setExp1Duration}
+            setExp2Entreprise={setExp2Entreprise}
+            setExp2Title={setExp2Title}
+            setExp2Content={setExp2Content}
+            setExp2Duration={setExp2Duration}
+            cv={cv}
+          />
+        )}
+        {!isEditing && (
+          <div className="w-full  flex justify-end">
+            <FrontButton
+              buttonType="secondary"
+              content="EDITER"
+              onClick={toggleIsEditing}
             />
           </div>
-          <div className="flex gap-4 justify-center sm:justify-between items-center w-full sm:px-8">
-            <label className="hidden sm:block" htmlFor="name">
-              Email :
-            </label>
-            <input
-              className="w-auto sm:w-8/12"
-              placeholder="Email"
-              id="email"
-              value={name}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-4 justify-center sm:justify-between items-center w-full sm:px-8">
-            <p className="mb-0">CV :</p>
-            <p className="mb-0 w-auto sm:w-8/12 text-center">BLANK</p>
-          </div>
-          <button type="button" className="underline italic font-sm">
-            Updloader un CV spécifique
-          </button>
-        </div>
+        )}
+
         <textarea
           className="w-full h-40 p-2"
           placeholder="Lettre de motivation / Message d'accompagnement ..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="ml-2 h-full text-white bg-blue-700 hover:bg-blue-800 text-lg rounded-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700"
-          >
-            Envoyer
-          </button>
-        </div>
-      </form>
+        <FrontButton
+          buttonType="primary"
+          content="ENVOYER"
+          onClick={sendApplication}
+        />
+      </div>
     </Modal>
   );
 }

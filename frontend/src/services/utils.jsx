@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-
-export function Boldify({ children }) {
-  return <span className="font-bold">{children}</span>;
-}
-
-export function Underline({ children }) {
-  return <span className="underline underline-offset-2">{children}</span>;
-}
+import { getUserSearchPreferences } from "./APIcall";
 
 export const serializeStrAndArr = (obj) => {
   const str = [];
@@ -83,3 +76,42 @@ export default function useWindowDimensions() {
 
   return windowDimensions;
 }
+
+export const fetchSearchPreferencesAndApplyToState = async (
+  userId,
+  setQueryStr,
+  setCity,
+  setJobFields,
+  setEntrepriseSizes,
+  setIndustries,
+  setCompensation,
+  setMinMaxRemoteDays,
+  setGeopoints,
+  setDistance
+) => {
+  const preferences = await getUserSearchPreferences(userId);
+
+  Object.keys(preferences).forEach((property) => {
+    if (typeof preferences[property] === "number")
+      preferences[property] = preferences[property].toString();
+  });
+
+  setQueryStr(preferences.query || "");
+  setCity(preferences.city || "");
+  setJobFields(preferences.job_fields ? preferences.job_fields.split(",") : []);
+  setEntrepriseSizes(
+    preferences.entreprise_sizes ? preferences.entreprise_sizes.split(",") : []
+  );
+  setIndustries(
+    preferences.industries ? preferences.industries.split(",") : []
+  );
+  setCompensation(preferences.compensation || "");
+  setMinMaxRemoteDays([
+    preferences.min_remote_days,
+    preferences.max_remote_days,
+  ]);
+  setGeopoints(
+    preferences.geopoints ? Object.values(preferences.geopoints) : []
+  );
+  setDistance(preferences.distance);
+};

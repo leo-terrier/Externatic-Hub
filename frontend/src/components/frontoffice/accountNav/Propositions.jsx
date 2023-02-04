@@ -10,12 +10,14 @@ export default function Propositions() {
 
   useEffect(() => {
     getUserPropositions(userInfo.id).then(function (res) {
+      console.log(res);
       setPropositions(
-        res.filter((elt) => elt.proposition_initative === "entreprise")
+        res.filter((elt) => elt.proposition_initiative === "entreprise")
       );
     });
   }, []);
 
+  console.log(propositions);
   if (propositions.length) {
     return (
       <ul className="space-y-8">

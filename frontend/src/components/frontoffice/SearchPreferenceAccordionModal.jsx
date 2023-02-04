@@ -3,13 +3,14 @@ import {
   entrepriseSizeOptions,
   jobFieldOptions,
 } from "@assets/form-options/form-options";
+import { UserInfoContext } from "@components/frontandback/UserContext";
 import { Modal, Slider, Zoom } from "@mui/material";
 import { addThousandSeparator, toggleLikeAccordion } from "@services/utils";
 import { BiChevronRight } from "react-icons/bi";
 
-import SearchLocationInput from "@components/frontandback/SearchLocationInput";
-import { useRef, useState } from "react";
 import { modifyUserSearchPreferences } from "@services/APIcall";
+import { useContext, useRef, useState } from "react";
+import OfferSearchLocationInput from "./OfferSearchLocationInput";
 
 export default function SearchPreferenceAccordionModal({
   setEntrepriseSizes,
@@ -27,13 +28,12 @@ export default function SearchPreferenceAccordionModal({
   setCity,
   queryStr,
   setQueryStr,
-  /* geopoints, */
+  geopoints,
   setGeopoints,
-  /* distance,
-  setDistance, */
+  distance,
+  setDistance,
   isFiltersOpen,
   setIsFiltersOpen,
-  id,
 }) {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isQueryStrOpen, setIsQueryStrOpen] = useState(false);
@@ -44,6 +44,9 @@ export default function SearchPreferenceAccordionModal({
   const [isCompensationOpen, setIsCompensationOpen] = useState(false);
   const [isRemoteDaysOpen, setIsRemoteDaysOpen] = useState(false);
   const [isDistancesOpen, setIsDistancesOpen] = useState(false);
+
+  const { userInfo } = useContext(UserInfoContext);
+  const { id: userId } = userInfo;
 
   const searchPreferenceCompleteRef = useRef(null);
 
@@ -64,21 +67,22 @@ export default function SearchPreferenceAccordionModal({
 
   const changePreferences = () => {
     const payload = {
-      query: queryStr,
+      queryStr,
       city,
-      jobFields: jobFields.join(),
-      entrepriseSizes: entrepriseSizes.join(),
-      industries: industries.join(),
+      jobFields,
+      entrepriseSizes,
+      industries,
       compensation,
-      min_remote_days: minMaxRemoteDays[0],
-      max_remote_days: minMaxRemoteDays[1],
-      id,
+      minMaxRemoteDays,
+      distance,
+      geopoints,
     };
-    modifyUserSearchPreferences(payload);
+
+    modifyUserSearchPreferences(payload, userId);
   };
 
   const handleDoneEditing = () => {
-    changePreferences();
+    if (isInMyAccount) changePreferences();
     setIsFiltersOpen(false);
   };
 
@@ -178,16 +182,24 @@ export default function SearchPreferenceAccordionModal({
                           transition: "max-height 0.35s ease-out",
                         }
                   }
-                  className="overflow-hidden"
+                  className=""
                 >
-                  <div className="flex gap-2 items-center">
+                  <div
+                    className={`flex gap-2 items-center relative duration-300 transition-all	${
+                      isLocationOpen ? "visible" : "invisible"
+                    }`}
+                  >
                     <label htmlFor="city">Ville : </label>
-                    <SearchLocationInput
+                    <OfferSearchLocationInput
+                      geopoints={geopoints}
                       city={city}
                       setCity={setCity}
                       setGeopoints={setGeopoints}
+                      isDistancesOpen={isDistancesOpen}
+                      setIsDistancesOpen={setIsDistancesOpen}
+                      distance={distance}
+                      setDistance={setDistance}
                       autoCompleteRef={searchPreferenceCompleteRef}
-                      placeholder=""
                     />
                   </div>
                 </div>
@@ -485,7 +497,9 @@ export default function SearchPreferenceAccordionModal({
                 <Slider
                   id="remote_days"
                   value={minMaxRemoteDays}
-                  onChange={(_, newValue) => setMinMaxRemoteDays(newValue)}
+                  onChange={(_, newValue) =>
+                    setMinMaxRemoteDays(newValue.toString())
+                  }
                   valueLabelDisplay="auto"
                   marks
                   max={5}

@@ -1,4 +1,4 @@
-import { Boldify } from "@services/utils";
+import Boldify from "@components/frontandback/Boldify";
 
 export default function EditableParagraph({
   isEditing,

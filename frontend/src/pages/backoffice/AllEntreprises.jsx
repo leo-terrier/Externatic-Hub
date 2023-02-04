@@ -1,9 +1,3 @@
-import { Pagination } from "@mui/material";
-import MaterialTable from "material-table";
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import resolveConfig from "tailwindcss/resolveConfig";
-import useWindowDimensions from "@services/utils";
 import {
   entrepriseIndustryOptions,
   entrepriseSizeOptions,
@@ -11,11 +5,17 @@ import {
 import EntrepriseCard from "@components/backoffice/EntrepriseCard";
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
+import { Pagination } from "@mui/material";
 import {
   createEntreprise,
   fetchAPIData,
   fetchDataFromTable,
 } from "@services/APIcall";
+import useWindowDimensions from "@services/utils";
+import MaterialTable from "material-table";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import resolveConfig from "tailwindcss/resolveConfig";
 
 const config = "../../../tailwind.config";
 
@@ -146,7 +146,7 @@ export default function AllEntreprises() {
     setDescription("");
     setSize("");
     setIndustry("");
-    // loadEntreprises();
+    tableRef.current.onQueryChange();
   };
 
   return (
@@ -205,8 +205,8 @@ export default function AllEntreprises() {
       </div>
       <form className="hidden md:block">
         <h2>Nouvelle entreprise</h2>
-        <div className="flex flex-wrap gap-8 ">
-          <div className="w-full flex gap-8">
+        <div className="flex flex-wrap gap-8  ">
+          <div className="w-full flex gap-8 items-center">
             <label htmlFor="name">Nom :</label>
             <input
               type="text"
@@ -216,7 +216,7 @@ export default function AllEntreprises() {
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div className="w-full flex gap-8">
+          <div className="w-full flex gap-8 items-center">
             <label htmlFor="size">Taille : </label>
             <select
               id="size"
@@ -229,7 +229,7 @@ export default function AllEntreprises() {
               ))}
             </select>
           </div>
-          <div className="w-full flex gap-8">
+          <div className="w-full flex gap-8 items-center">
             <label htmlFor="industry">Secteur : </label>
             <select
               id="industry"
@@ -255,7 +255,7 @@ export default function AllEntreprises() {
           <div className="flex justify-center w-full mt-4">
             <button
               type="button"
-              className="text-2xl w-1/2 font-bold border-2 p-[20px] rounded-md text-slate-100 bg-sky-600 hover:bg-sky-800 "
+              className="text-2xl w-1/2 font-bold  p-[20px] rounded-md text-slate-100 bg-sky-600 hover:bg-sky-800 "
               onClick={(e) => handleCreate(e)}
             >
               CREER ENTREPRISE

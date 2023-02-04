@@ -52,7 +52,6 @@ export default function Login() {
       <div className="flex flex-col items-center justify-center my-3">
         <FrontButton
           onClick={handleSubmit}
-          isPrimary
           content="Valider"
           tailwindClass="w-full mt-4"
         />
@@ -66,14 +65,14 @@ export default function Login() {
         </div>
         <div className="flex gap-2 items-center w-full">
           <FrontButton
-            isPrimary={false}
+            buttonType="secondary"
             onClick={() => navigate("../register")}
             content="Créer un compte"
             tailwindClass=" w-full "
           />
           <p className="font-extrabold mb-0">OU</p>
           <FrontButton
-            isPrimary={false}
+            isPrimary="secondary"
             onClick={() => navigate("/")}
             content="Linkedin"
             tailwindClass=" w-full "

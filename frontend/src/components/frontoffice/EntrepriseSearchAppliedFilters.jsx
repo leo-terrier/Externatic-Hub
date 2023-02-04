@@ -1,4 +1,4 @@
-import { Boldify } from "@services/utils";
+import Boldify from "@components/frontandback/Boldify";
 import { IoMdClose } from "react-icons/io";
 
 export default function EntrepriseSearchAppliedFilters({

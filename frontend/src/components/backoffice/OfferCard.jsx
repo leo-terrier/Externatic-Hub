@@ -1,9 +1,9 @@
-import { Boldify } from "@services/utils";
+import Boldify from "@components/frontandback/Boldify";
 import { Link } from "react-router-dom";
 
 export default function OfferCard({ offer }) {
   return (
-    <li>
+    <li className="text-black">
       <Link to={`../../back/offre/${offer.id.toString()}`}>
         <h2 className="text-xl mb-0">
           {offer.title} (id : {offer.id})

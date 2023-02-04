@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function EntrepriseCard({ entreprise }) {
   return (
-    <li>
+    <li className="text-black">
       <Link to={entreprise.id.toString()}>
         <h2 className="text-xl mb-2 text-rose-600">
           {entreprise.name} (id : {entreprise.id})

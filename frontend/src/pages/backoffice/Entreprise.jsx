@@ -1,5 +1,6 @@
 import CreateOfferForm from "@components/backoffice/CreateOfferForm";
 import OfferCard from "@components/backoffice/OfferCard";
+import Boldify from "@components/frontandback/Boldify";
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
 import { Pagination } from "@mui/material";
@@ -95,9 +96,13 @@ export default function Entreprise() {
     return (
       <div className="space-y-8 md:space-y-16">
         <div>
-          <h1 className="mb-2">{`${info.name} (n° ${info.id})`}</h1>
-          <p className="font-bold">Taille : {info.size}</p>
-          <p className="font-bold">Secteur : {info.industry}</p>
+          <h1 className="mb-3">{`${info.name} (n° ${info.id})`}</h1>
+          <p>
+            <Boldify>Taille</Boldify> : {info.size}
+          </p>
+          <p>
+            <Boldify>Secteur</Boldify> : {info.industry}
+          </p>
         </div>
         <div>
           <h2>Description</h2>

@@ -1,23 +1,34 @@
-import MaterialTable from "material-table";
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import NewPropositionEmailModal from "@components/backoffice/NewPropositionEmailModal";
 import OfferCard from "@components/backoffice/OfferCard";
+import Boldify from "@components/frontandback/Boldify";
 import Listing from "@components/frontandback/Listing";
 import Listings from "@components/frontandback/Listings";
+import ResumeNotEditable from "@components/frontandback/ResumeNotEditable";
+import Underline from "@components/frontandback/Underline";
+
 import {
+  fetchDataFromTable,
   getUserById,
   getUserFavorites,
   getUserPropositions,
+  getUserResume,
   getUserSearchPreferences,
 } from "@services/APIcall";
-import { Boldify } from "@services/utils";
+import MaterialTable from "material-table";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function User() {
   const [info, setInfo] = useState({});
+  const [resume, setResume] = useState({});
   const [preferences, setPreferences] = useState({});
   const [propositionsMade, setPropositionsMade] = useState([]);
   const [propositionsReceived, setPropositionsReceived] = useState([]);
   const [favorites, setFavorites] = useState([]);
+
+  const [isPropositionEmailModalOpen, setIsPropositionEmailModalOpen] =
+    useState(false);
+  const offerInfoRef = useRef(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -128,69 +139,152 @@ export default function User() {
   };
 
   useEffect(() => {
-    getUserById(id).then((res) => {
-      setInfo(res);
-    });
-    getUserSearchPreferences(id).then((res) => {
-      setPreferences(res);
-    });
-    getUserPropositions(id).then((res) => {
-      setPropositionsMade(
-        res.filter((elt) => elt.proposition_initiative === "user")
-      );
-      setPropositionsReceived(
-        res.filter((elt) => elt.proposition_initiative === "entreprise")
-      );
-    });
-    getUserFavorites(id).then((res) => setFavorites(res));
-  }, []);
+    if (!isPropositionEmailModalOpen) {
+      getUserById(id).then((res) => {
+        setInfo(res);
+      });
+      getUserResume(id).then(([res]) => {
+        setResume(res);
+      });
+      getUserSearchPreferences(id).then((res) => {
+        setPreferences(res);
+      });
+      getUserPropositions(id).then((res) => {
+        setPropositionsMade(
+          res.filter((elt) => elt.proposition_initiative === "user")
+        );
+        setPropositionsReceived(
+          res.filter((elt) => elt.proposition_initiative === "entreprise")
+        );
+      });
+      getUserFavorites(id).then((res) => setFavorites(res));
+    }
+  }, [isPropositionEmailModalOpen]);
 
+  // New Proposition
+  const tableColumnsNewProposition = [
+    {
+      title: "ID",
+      field: "id",
+      type: "numeric",
+      cellStyle: { width: "4%" },
+      width: "4%",
+      headerStyle: { width: "4%" },
+      mySqlCol: "t1.id",
+    },
+    {
+      title: "Date",
+      field: "date",
+      type: "date",
+      mySqlCol: "t1.date",
+    },
+    {
+      title: "Titre",
+      field: "title",
+      mySqlCol: "t1.title",
+    },
+    {
+      title: "Ville",
+      field: "city",
+      mySqlCol: "t1.city",
+    },
+    {
+      title: "Domaine",
+      field: "job_field",
+      mySqlCol: "t1.job_field",
+    },
+    {
+      title: "Entreprise",
+      field: "entreprise_name",
+      mySqlCol: "t4.name",
+    },
+    {
+      title: "Consultant",
+      field: "consultant",
+      mySqlCol: "consultant",
+    },
+    {
+      title: "ConsultantId",
+      field: "consultant_id",
+      mySqlCol: "consultant",
+      hidden: true,
+    },
+  ];
+
+  const optionsNewProposition = {
+    pageSize: 5,
+    emptyRowsWhenPaging: false,
+    pageSizeOptions: [10, 20, 30],
+    debounceInterval: 1000,
+    headerStyle: {
+      zIndex: 0,
+    },
+    actionsColumnIndex: 7,
+  };
+
+  const handleNewProposition = (event, rowData) => {
+    console.log(rowData);
+    offerInfoRef.current = {
+      id: rowData.id,
+      title: rowData.title,
+      entrepriseName: rowData.entreprise_name,
+      city: rowData.city,
+      consultantId: rowData.consultant_id,
+    };
+    setIsPropositionEmailModalOpen(true);
+  };
   if (Object.keys(info).length) {
     return (
       <div className="space-y-8 md:space-y-12">
-        <h1>{`${info.firstname} ${info.lastname} (n°${info.id})`}</h1>
+        <h1>
+          {info.user ? (
+            `${info.user} (n°${info.id})`
+          ) : (
+            <Underline tailwindClasses="italic">Non renseigné</Underline>
+          )}
+        </h1>
         <div>
           <h2>Informations candidat</h2>
           <p>
-            <Boldify>Prénom : </Boldify>
-            {info.firstname}
-          </p>
-          <p>
             <Boldify>Nom : </Boldify>
-            {info.lastname}
+            {info.user || (
+              <Underline tailwindClasses="italic">Non renseigné</Underline>
+            )}
           </p>
+
           <p>
             <Boldify>Ville : </Boldify>
-            {info.city}
-          </p>
-          <p>
-            <Boldify>Code postal :</Boldify> {info.zipcode}
+            {info.city || (
+              <Underline tailwindClasses="italic">Non renseigné</Underline>
+            )}
           </p>
           <p>
             <Boldify>Email : </Boldify>
-            {info.email}
+            {info.email || (
+              <Underline tailwindClasses="italic">Non renseigné</Underline>
+            )}
           </p>
           <p>
             <Boldify>Tel : </Boldify>
-            {info.telephone}
+            {info.telephone || (
+              <Underline tailwindClasses="italic">Non renseigné</Underline>
+            )}
           </p>
           <p>
             <Boldify>Moyen de contact préféré : </Boldify>
-            {info.favcontactmethod}
+            {info.favcontactmethod || (
+              <Underline tailwindClasses="italic">Non renseigné</Underline>
+            )}
           </p>
           <p>
-            <Boldify>CV : </Boldify>
-            {info.cv || "N/A"}
-          </p>
-          <p
-            className={
-              info.status === "active"
-                ? "text-green-500"
-                : "text-red-500 font-bold"
-            }
-          >
             <Boldify>Statut : </Boldify>
-            {info.status === "active" ? "Actif" : "Inactif"}
+            <span
+              className={`font-bold ${
+                info.is_active === 1 ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {info.is_active === 1 ? "En recherche active" : "Inactif"}
+            </span>
           </p>
         </div>
         <div>
@@ -198,39 +292,64 @@ export default function User() {
           <div>
             <p>
               <Boldify>Lieu : </Boldify>
-              {`${preferences.city} ${preferences.zipcode}`}
+              {preferences.city || (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              )}
             </p>
             <p>
               <Boldify>Domaine : </Boldify>
-              {preferences.job_field}
+              {preferences.job_fields || (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              )}
             </p>
-            <p>
-              <Boldify>Technos : </Boldify>
-              {preferences.stack}
-            </p>
+
             <p>
               <Boldify>Salaire souhaité : </Boldify>
-              {preferences.compensation || "N/A"}
+              {preferences.compensation || (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              )}
             </p>
             <p>
               <Boldify>Taille de l'entreprise : </Boldify>
-              {preferences.entreprise_size}
+              {preferences.entreprise_sizes || (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              )}
             </p>
             <p>
               <Boldify>Secteur : </Boldify>
-              {preferences.industry}
+              {preferences.industries || (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              )}
             </p>
             <p>
               <Boldify>Nombre de jours de télétravail autorisés : </Boldify>
-              {preferences.remote_days || "N/A"}
-            </p>
-            <p>
-              <Boldify>Diplôme requis : </Boldify>
-              {preferences.education}
+              {preferences.min_remote_days === (0).toString() &&
+              preferences.max_remote_days === (5).toString() ? (
+                <Underline tailwindClasses="italic">Non renseigné</Underline>
+              ) : (
+                `Entre ${preferences.min_remote_days} et ${preferences.max_remote_days} jour(s) de
+              télétravail`
+              )}
             </p>
           </div>
         </div>
-        <section className="hidden md:block">
+        <section>
+          <h2>CV</h2>
+          {Object.keys(resume).length > 0 && (
+            <ResumeNotEditable
+              exp1Title={resume.exp_1_title}
+              exp1Content={resume.exp_1_content}
+              exp1Entreprise={resume.exp_1_entreprise}
+              exp1Duration={resume.exp_1_duration}
+              exp2Title={resume.exp_2_title}
+              exp2Content={resume.exp_2_content}
+              exp2Entreprise={resume.exp_2_entreprise}
+              exp2Duration={resume.exp_2_duration}
+            />
+          )}
+        </section>
+        <section className="hidden md:block space-y-8">
+          <h2>Activité</h2>
           <MaterialTable
             title="Propositions reçues"
             columns={propositionTableColumns}
@@ -241,8 +360,7 @@ export default function User() {
             }
             style={{ width: "100%" }}
           />
-        </section>
-        <section className="hidden md:block">
+
           <MaterialTable
             title="Candidatures réalisées"
             columns={propositionTableColumns}
@@ -253,8 +371,7 @@ export default function User() {
             }
             style={{ width: "100%" }}
           />
-        </section>
-        <section className="hidden md:block">
+
           <MaterialTable
             title="Offres favorites"
             columns={favoriteTableColumns}
@@ -263,6 +380,36 @@ export default function User() {
             onRowClick={(_, rowData) =>
               navigate(`../offre/${rowData.id.toString()}`)
             }
+          />
+        </section>
+        <section className="hidden md:block">
+          <h2>Nouvelle proposition</h2>
+          <div className="hidden md:block">
+            <MaterialTable
+              title="Liste des offres actives"
+              columns={tableColumnsNewProposition}
+              data={(tableState) =>
+                fetchDataFromTable(tableState, "offers", true)
+              }
+              options={optionsNewProposition}
+              onRowClick={(_, rowData) =>
+                navigate(`../offre/${rowData.id.toString()}`)
+              }
+              actions={[
+                {
+                  icon: "send",
+                  tooltip: "Proposer cette offre",
+                  onClick: handleNewProposition,
+                },
+              ]}
+            />
+          </div>
+          <NewPropositionEmailModal
+            userName={info.user}
+            userId={info.id}
+            offer={offerInfoRef.current}
+            isPropositionEmailModalOpen={isPropositionEmailModalOpen}
+            setIsPropositionEmailModalOpen={setIsPropositionEmailModalOpen}
           />
         </section>
         <section className="md:hidden">

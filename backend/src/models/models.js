@@ -64,18 +64,66 @@ const registerUser = async (email, hash) => {
   return user;
 };
 
+const createBlankResume = async (userId) => {
+  const resume = await database.query(queries.createBlankResume, [userId]);
+  return resume;
+};
+const createBlankSearchPreferences = async (userId) => {
+  const resume = await database.query(queries.createBlankSearchPreferences, [
+    userId,
+  ]);
+  return resume;
+};
+
+const addFavoriteOffer = async (userId, offerId) => {
+  const favoriteOffer = await database.query(queries.addFavoriteOffer, [
+    userId,
+    offerId,
+  ]);
+  return favoriteOffer;
+};
+const addPropositionResume = async (obj) => {
+  const specificResume = await database.query(
+    queries.addPropositionResume,
+    Object.values(obj)
+  );
+  return specificResume;
+};
+
+const createMessageThread = async (obj) => {
+  const thread = await database.query(
+    queries.createMessageThread,
+    Object.values(obj)
+  );
+  return thread;
+};
+
+const createMessage = async (obj) => {
+  const message = await database.query(
+    queries.createMessage,
+    Object.values(obj)
+  );
+  return message;
+};
+
 // // PUT
 const modifyUserInfoById = async (obj) => {
-  console.log(obj);
   const user = await database.query(queries.modifyUserInfo, Object.values(obj));
   return user;
 };
 
-const modifyUserSearchPreferencesById = async (obj) => {
+const modifyUserSearchPreferencesById = async (obj, userId) => {
+  const copyObj = { ...obj };
+  if (!copyObj.geopoints.length) delete copyObj.geopoints;
   const user = await database.query(
-    queries.modifyUserSearchPreferences,
-    Object.values(obj)
+    queries.modifyUserSearchPreferences(copyObj),
+    [...Object.values(copyObj), userId]
   );
+  return user;
+};
+
+const toggleHasAlerts = async (userId) => {
+  const user = await database.query(queries.toggleHasAlerts, [userId]);
   return user;
 };
 
@@ -87,13 +135,21 @@ const modifyUserResume = async (obj) => {
   return resume;
 };
 
+// //
+
+const deleteFavoriteOffer = async (userId, offerId) => {
+  const favoriteOffer = await database.query(queries.deleteFavoriteOffer, [
+    userId,
+    offerId,
+  ]);
+  return favoriteOffer;
+};
+
 // OFFERS
 
 // // GET
 const getOffers = async (obj) => {
   const [query, parameters] = queries.getOffers(obj);
-  console.log("///SELECT///");
-  console.log(database.format(query, parameters));
   /* console.log('///COUNT///');
   console.log(database.format(queries.getNumberOfOffers(query), parameters)); */
   const [offers] = await database.query(query, parameters);
@@ -107,8 +163,12 @@ const getOffers = async (obj) => {
 
 // ATT : include table entreprises
 
-const getOfferById = async (id) => {
-  const [offer] = await database.query(queries.getOfferById, [id]);
+const getOfferById = async (id, userId) => {
+  const [offer] = await database.query(queries.getOfferById, [
+    userId,
+    userId,
+    id,
+  ]);
   return offer;
 };
 
@@ -128,18 +188,28 @@ const createOffer = async (obj) => {
   return id;
 };
 
+// // PUT
+
+const changeOfferStatusToUnfilled = async (offerId) => {
+  const offer = await database.query(queries.changeOfferStatusToUnfilled, [
+    offerId,
+  ]);
+  return offer;
+};
+
+const changeUserPropositionsToStatusRejected = async (offerId) => {
+  const proposition = await database.query(
+    queries.changePendingUserPropositionsToRejected,
+    [offerId]
+  );
+  return proposition;
+};
 // // ENTREPRISES
 
 // GET
 
 const getEntreprises = async (obj) => {
   const [query, parameters] = queries.getEntreprises(obj);
-  console.log("///SELECT///");
-  console.log(database.format(query, parameters));
-  console.log("///COUNT///");
-  console.log(
-    database.format(queries.getNumberOfEntreprises(query), parameters)
-  );
   const [entreprises] = await database.query(query, parameters);
   const [entrepriseCount] = await database.query(
     queries.getNumberOfEntreprises(query),
@@ -185,13 +255,15 @@ const createEntrepriseContact = async (obj) => {
 
 // Propositions
 
+// // GET
+
 const getPropositionById = async (id) => {
   const [proposition] = await database.query(queries.getPropositionById, [id]);
   console.log(database.format(queries.getPropositionById, [id]));
   return proposition;
 };
 
-const getPropositionMessages = async (id) => {
+const getPropositionMessagesByPropositionId = async (id) => {
   const [messages] = await database.query(queries.getPropositionsMessages, [
     id,
   ]);
@@ -205,11 +277,41 @@ const getPropositionInterviews = async (id) => {
   return interviews;
 };
 
+const getPropositionResume = async (propositionId) => {
+  const [resume] = await database.query(queries.getPropositionResume, [
+    propositionId,
+  ]);
+  return resume;
+};
+// // POST
+
+const createProposition = async (obj) => {
+  const proposition = await database.query(
+    queries.createProposition,
+    Object.values(obj)
+  );
+  return proposition;
+};
+
+const createPropositionMessage = async (obj) => {
+  const message = await database.query(
+    queries.createPropositionMessage,
+    Object.values(obj)
+  );
+  console.log(message);
+  return message;
+};
+
 module.exports = {
   getOffers,
   getOfferById,
   getOfferPropositions,
   createOffer,
+  addFavoriteOffer,
+  changeOfferStatusToUnfilled,
+  changeUserPropositionsToStatusRejected,
+  deleteFavoriteOffer,
+
   getUsers,
   getUserById,
   getUserByEmail,
@@ -218,16 +320,27 @@ module.exports = {
   getUserFavorites,
   getUserResume,
   registerUser,
+  createBlankResume,
+  createBlankSearchPreferences,
   modifyUserInfoById,
   modifyUserSearchPreferencesById,
   modifyUserResume,
+  toggleHasAlerts,
+  addPropositionResume,
+  createMessageThread,
+  createMessage,
+
   getEntreprises,
   getEntrepriseById,
   getEntrepriseOffers,
   getEntrepriseContacts,
   createEntreprise,
   createEntrepriseContact,
+
   getPropositionById,
-  getPropositionMessages,
+  getPropositionMessagesByPropositionId,
   getPropositionInterviews,
+  getPropositionResume,
+  createProposition,
+  createPropositionMessage,
 };

@@ -1,5 +1,6 @@
 import { UserInfoContext } from "@components/frontandback/UserContext";
 import { loginUser, registerUser } from "@services/APIcall";
+import { fillInfoNotification } from "@services/notificationStore";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FrontButton from "./FrontButton";
@@ -18,8 +19,10 @@ export default function Register() {
       const createdUser = await registerUser(email, password);
       if (createdUser) {
         const user = await loginUser(email, password);
+        console.log(user);
         setUserInfo(user);
         navigate("../account");
+        fillInfoNotification();
       } else {
         // setIsWrongCredentials(true);
       }
@@ -68,7 +71,6 @@ export default function Register() {
       <div className="flex flex-col items-center justify-center my-3">
         <FrontButton
           onClick={handleSubmit}
-          isPrimary
           content="Créer un compte"
           tailwindClass="w-full mt-4"
         />

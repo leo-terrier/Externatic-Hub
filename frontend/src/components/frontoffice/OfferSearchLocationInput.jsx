@@ -13,6 +13,7 @@ export default function OfferSearchLocationInput({
   isDistancesOpen,
   distance,
   autoCompleteRef,
+  placeholder,
 }) {
   const ref = useRef();
 
@@ -28,13 +29,14 @@ export default function OfferSearchLocationInput({
   }, []);
 
   return (
-    <div>
+    <div className="w-full">
       <SearchLocationInput
         city={city}
         setCity={setCity}
         setGeopoints={setGeopoints}
         tailwindClasses="w-full h-[50px]"
         autoCompleteRef={autoCompleteRef}
+        placeholder={placeholder}
       />
       {geopoints.length > 0 && (
         <button

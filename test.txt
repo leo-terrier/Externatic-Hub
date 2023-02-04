@@ -1,0 +1,1 @@
+http://localhost:5001/offers?entrepriseSizes=entre%20250%20et%202000%20employ%C3%A9s&entrepriseSizes=%3E%202000%20employ%C3%A9s&entrepriseSizes=entre%2050%20et%20200%20employ%C3%A9s&entrepriseSizes=entre%2015%20et%2050%20employ%C3%A9s&industries=tech&industries=Immobilier&industries=Distribution&minMaxRemoteDays=0&minMaxRemoteDays=5&city=Paris%20(75)&limit=10&offset=0

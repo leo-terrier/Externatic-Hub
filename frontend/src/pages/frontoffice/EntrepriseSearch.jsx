@@ -28,6 +28,9 @@ export default function EntrepriseSearch() {
 
   return (
     <div className="entrepriseSearchDiv flex flex-col gap-12 w-full">
+      <h1 className="text-3xl sm:text-4xl mb-2 sm:mb-4 text-center">
+        Recherche d'entreprises
+      </h1>
       <EntrepriseSearchForm offset={offset} handleSearch={handleSearch} />
       <div className="w-full sm:w-10/12 mx-auto">
         <Listings>
